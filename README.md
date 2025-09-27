@@ -1,5 +1,5 @@
 
-<!doctype html>
+
 <html lang="th">
 <head>
 <meta charset="utf-8" />
