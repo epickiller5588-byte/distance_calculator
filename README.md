@@ -1,5 +1,3 @@
-
-
 <html lang="th">
 <head>
 <meta charset="utf-8" />
@@ -45,62 +43,14 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
 .heavy{background:linear-gradient(90deg,#e74c3c,#c0392b)}
 
 /* ---------- Responsive ---------- */
-@media(max-width:600px){
-  .wrap{
-    flex-direction: column; 
-    padding:12px;
-  }
-  
-@media(max-width:600px){
-  .search-row-horizontal{
-    flex-direction: column;
-    gap: 6px;
-  }
+@media(max-width:1000px){ 
+  .wrap{flex-direction:column;padding:12px;} 
+  .sidebar{width:auto;min-width:unset;max-height:46vh;overflow:auto; -webkit-overflow-scrolling: touch;} 
+  .fare-table{right:12px;bottom:12px;min-width:150px;} 
+  .controls-row{flex-direction:column;align-items:stretch;} 
+  select{width:100%;}
+  .routes{max-height:25vh;overflow:auto; -webkit-overflow-scrolling: touch;}
 }
-
-  .map-wrap{
-    order: -1;   
-    height:50vh; 
-  }
-
-  .sidebar{
-    order: 0;
-    padding:12px;
-    max-height:50vh;
-    font-size:14px;
-    overflow:auto;
-    -webkit-overflow-scrolling: touch; 
-  }
-  
-  .logo{font-size:18px;}
-  .btn, .btn.alt{font-size:13px;padding:10px;} 
-  #search,#searchStart{font-size:14px;padding:10px;}
-  .route-card{padding:10px;}
-  .routes{
-    max-height:22vh;
-    overflow:auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .fare-table{
-    bottom:10px;
-    right:10px;
-    min-width:120px;
-    max-width:90vw;
-    font-size:13px;
-    padding:10px;
-  }
-  .legend{
-    bottom:10px;
-    left:10px;
-    font-size:12px;
-    padding:6px;
-  }
-  select{
-    font-size:14px;
-    padding:8px;
-  }
-}
-
 
 @media(max-width:600px){
   .sidebar{
@@ -108,10 +58,10 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
     max-height:50vh;
     font-size:14px;
     overflow:auto;
-    -webkit-overflow-scrolling: touch; 
+    -webkit-overflow-scrolling: touch; /* smooth scroll iOS */
   }
   .logo{font-size:18px;}
-  .btn, .btn.alt{font-size:13px;padding:10px;} 
+  .btn, .btn.alt{font-size:13px;padding:10px;} /* touch target ใหญ่ขึ้น */
   #search,#searchStart{font-size:14px;padding:10px;}
   .route-card{padding:10px;}
   .routes{
@@ -167,6 +117,8 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
     <div class="search-row">
       <input id="search" placeholder="ค้นหาปลายทาง..." />
     </div>
+
+    <div class="chips" id="popular"></div>
 
     <div class="controls-row">
       <select id="vehicle"></select>
@@ -333,6 +285,16 @@ for(const k in vehicleRates){
   opt.textContent = vehicleNames[currentLang][k] || k;
   sel.appendChild(opt);
 }
+
+
+  // popular chips
+  const pop = document.getElementById("popular"); pop.innerHTML = "";
+  i18n[currentLang].popular.forEach(p => {
+    const el = document.createElement("div"); el.className="chip"; el.textContent = p;
+    el.onclick = ()=>{ document.getElementById('search').value = p; triggerTextSearch(p); };
+    pop.appendChild(el);
+  });
+
   // ensure routes list placeholder
   if(!lastRoutes || lastRoutes.length===0){
     document.getElementById('routesList').textContent = i18n[currentLang].noRoute;
@@ -348,9 +310,9 @@ function renderFareTable(){
     const name = vehicleNames[currentLang][k] || k;
     const row = document.createElement('tr');
     if(v.fixed){
-      row.innerHTML = `<td>${name}</td><td>${v.min} ฿ (fixed)</td><td>-</td>`;
+      row.innerHTML = <td>${name}</td><td>${v.min} ฿ (fixed)</td><td>-</td>;
     } else {
-      row.innerHTML = `<td>${name}</td><td>${v.base} ฿</td><td>${v.perKm} ฿</td>`;
+      row.innerHTML = <td>${name}</td><td>${v.base} ฿</td><td>${v.perKm} ฿</td>;
     }
     tbody.appendChild(row);
   }
@@ -516,14 +478,14 @@ function renderRoutes(routes, vehicleKey){
   routes.forEach((r,i) => {
     const card = document.createElement('div'); card.className='route-card';
     card.dataset.routeIndex = i;
-    const distText = `${km(r.legs[0].distance.value)} ${i18n[currentLang].kmLabel}`;
-    const durText = `${Math.round(r.legs[0].duration.value/60)} ${i18n[currentLang].minsLabel}`;
-    const fareText = `${calculateFare(r, vehicleKey)} ฿`;
-    card.innerHTML = `<div class="route-left">
+    const distText = ${km(r.legs[0].distance.value)} ${i18n[currentLang].kmLabel};
+    const durText = ${Math.round(r.legs[0].duration.value/60)} ${i18n[currentLang].minsLabel};
+    const fareText = ${calculateFare(r, vehicleKey)} ฿;
+    card.innerHTML = <div class="route-left">
         <div class="route-title">${i18n[currentLang].routeLabel} ${i+1}</div>
         <div class="route-meta">${distText} | ${durText}</div>
         <div class="fare-pill">${fareText}</div>
-      </div>`;
+      </div>;
     card.onclick = () => { selectedRouteIndex = i; drawPolyline(routes[i], i); highlightSelected(); };
     container.appendChild(card);
   });
@@ -563,7 +525,7 @@ function updateRouteFareLabels(){
     if(isNaN(idx) || !lastRoutes[idx]) return;
     const newFare = calculateFare(lastRoutes[idx], vehicleKey);
     const pill = card.querySelector('.fare-pill');
-    if(pill) pill.textContent = `${newFare} ฿`;
+    if(pill) pill.textContent = ${newFare} ฿;
   });
 }
 
@@ -583,4 +545,3 @@ window.calculateFare = calculateFare;
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcAtU6iQwn7aUsNwCHST73U2pqKbImiJM&libraries=places&callback=initMap" async defer></script>
 </body>
 </html>
-
