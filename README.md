@@ -1,3 +1,4 @@
+<!doctype html>
 <html lang="th">
 <head>
 <meta charset="utf-8" />
@@ -250,7 +251,7 @@ function applyLanguage(){
   document.getElementById("btn-calc").textContent = i18n[currentLang].calc;
   document.getElementById("btn-reset").textContent = i18n[currentLang].reset;
   document.getElementById("fare-title").textContent = i18n[currentLang].fareTable;
-  document.getElementById("lbl-origin").textContent = i18n[currentLang].originLabel;
+  document.getElementById("lbl-origin").textContent = i18n[currentLang].start;
   document.getElementById("lbl-dest").textContent = i18n[currentLang].search;
   document.getElementById("lbl-recommend").textContent = i18n[currentLang].routeLabel;
   document.getElementById("legend-title").textContent = i18n[currentLang].traffic;
@@ -310,9 +311,9 @@ function renderFareTable(){
     const name = vehicleNames[currentLang][k] || k;
     const row = document.createElement('tr');
     if(v.fixed){
-      row.innerHTML = <td>${name}</td><td>${v.min} ฿ (fixed)</td><td>-</td>;
+      row.innerHTML = `<td>${name}</td><td>${v.min} ฿ (fixed)</td><td>-</td>`;
     } else {
-      row.innerHTML = <td>${name}</td><td>${v.base} ฿</td><td>${v.perKm} ฿</td>;
+      row.innerHTML = `<td>${name}</td><td>${v.base} ฿</td><td>${v.perKm} ฿</td>`;
     }
     tbody.appendChild(row);
   }
@@ -478,14 +479,14 @@ function renderRoutes(routes, vehicleKey){
   routes.forEach((r,i) => {
     const card = document.createElement('div'); card.className='route-card';
     card.dataset.routeIndex = i;
-    const distText = ${km(r.legs[0].distance.value)} ${i18n[currentLang].kmLabel};
-    const durText = ${Math.round(r.legs[0].duration.value/60)} ${i18n[currentLang].minsLabel};
-    const fareText = ${calculateFare(r, vehicleKey)} ฿;
-    card.innerHTML = <div class="route-left">
+    const distText = `${km(r.legs[0].distance.value)} ${i18n[currentLang].kmLabel}`;
+    const durText = `${Math.round(r.legs[0].duration.value/60)} ${i18n[currentLang].minsLabel}`;
+    const fareText = `${calculateFare(r, vehicleKey)} ฿`;
+    card.innerHTML = `<div class="route-left">
         <div class="route-title">${i18n[currentLang].routeLabel} ${i+1}</div>
         <div class="route-meta">${distText} | ${durText}</div>
         <div class="fare-pill">${fareText}</div>
-      </div>;
+      </div>`;
     card.onclick = () => { selectedRouteIndex = i; drawPolyline(routes[i], i); highlightSelected(); };
     container.appendChild(card);
   });
@@ -525,7 +526,7 @@ function updateRouteFareLabels(){
     if(isNaN(idx) || !lastRoutes[idx]) return;
     const newFare = calculateFare(lastRoutes[idx], vehicleKey);
     const pill = card.querySelector('.fare-pill');
-    if(pill) pill.textContent = ${newFare} ฿;
+    if(pill) pill.textContent = `${newFare} ฿`;
   });
 }
 
@@ -541,7 +542,7 @@ window.applyLanguage = applyLanguage;
 window.calculateFare = calculateFare;
 </script>
 
-<!-- Replace YOUR_API_KEY_HERE with your Google Maps API key (restrict it appropriately in Cloud Console) -->
+<!-- Replace YOUR_API_KEY_HERE with your Google Maps API key (restrict it appropriately in Cloud Console) --> 
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcAtU6iQwn7aUsNwCHST73U2pqKbImiJM&libraries=places&callback=initMap" async defer></script>
 </body>
 </html>
