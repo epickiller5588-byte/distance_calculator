@@ -71,24 +71,7 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
     overflow:auto;
     -webkit-overflow-scrolling: touch; 
   }
-  .search-row-horizontal {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.search-row-horizontal input {
-  flex: 1; /* ให้ขยายเท่ากัน */
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #e6e9ee;
-  font-size: 15px;
-}
-
-.search-row-horizontal button {
-  flex: 0 0 auto; /* ปุ่มขนาดตามเนื้อหา */
-}
-
+  
   .logo{font-size:18px;}
   .btn, .btn.alt{font-size:13px;padding:10px;} 
   #search,#searchStart{font-size:14px;padding:10px;}
@@ -165,17 +148,18 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
     <div class="logo">Trip Roule — Phuket demo
       <button id="btn-lang">🌐 English</button>
     </div>
-<div class="search-row-horizontal">
-  <input id="searchStart" placeholder="เลือกต้นทาง..." />
-  <input id="search" placeholder="ค้นหาปลายทาง..." />
-  <button 
-    id="btn-current" 
-    class="btn alt" 
-    title="ใช้ตำแหน่งปัจจุบัน" 
-    aria-label="ใช้ตำแหน่งปัจจุบัน"
-  >
-    📍
-  </button>
+
+    <div class="section-title" id="lbl-origin">ต้นทาง</div>
+    <div class="search-row">
+      <input id="searchStart" placeholder="เลือกต้นทาง..." />
+     <button 
+  id="btn-current" 
+  class="btn alt" 
+  title="ใช้ตำแหน่งปัจจุบัน" 
+  aria-label="ใช้ตำแหน่งปัจจุบัน"
+>
+  📍
+</button>
 
     </div>
 
