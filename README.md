@@ -45,14 +45,56 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
 .heavy{background:linear-gradient(90deg,#e74c3c,#c0392b)}
 
 /* ---------- Responsive ---------- */
-@media(max-width:1000px){ 
-  .wrap{flex-direction:column;padding:12px;} 
-  .sidebar{width:auto;min-width:unset;max-height:46vh;overflow:auto; -webkit-overflow-scrolling: touch;} 
-  .fare-table{right:12px;bottom:12px;min-width:150px;} 
-  .controls-row{flex-direction:column;align-items:stretch;} 
-  select{width:100%;}
-  .routes{max-height:25vh;overflow:auto; -webkit-overflow-scrolling: touch;}
+@media(max-width:600px){
+  .wrap{
+    flex-direction: column; /* stack vertically */
+    padding:12px;
+  }
+
+  /* สลับ map ขึ้นด้านบน */
+  .map-wrap{
+    order: -1;   /* map จะอยู่ก่อน sidebar */
+    height:50vh; /* กำหนดความสูง map บนมือถือ */
+  }
+
+  .sidebar{
+    order: 0;
+    padding:12px;
+    max-height:50vh;
+    font-size:14px;
+    overflow:auto;
+    -webkit-overflow-scrolling: touch; /* smooth scroll iOS */
+  }
+
+  .logo{font-size:18px;}
+  .btn, .btn.alt{font-size:13px;padding:10px;} /* touch target ใหญ่ขึ้น */
+  #search,#searchStart{font-size:14px;padding:10px;}
+  .route-card{padding:10px;}
+  .routes{
+    max-height:22vh;
+    overflow:auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .fare-table{
+    bottom:10px;
+    right:10px;
+    min-width:120px;
+    max-width:90vw;
+    font-size:13px;
+    padding:10px;
+  }
+  .legend{
+    bottom:10px;
+    left:10px;
+    font-size:12px;
+    padding:6px;
+  }
+  select{
+    font-size:14px;
+    padding:8px;
+  }
 }
+
 
 @media(max-width:600px){
   .sidebar{
