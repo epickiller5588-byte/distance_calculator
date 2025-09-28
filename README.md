@@ -51,10 +51,9 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
     padding:12px;
   }
 
-  /* สลับ map ขึ้นด้านบน */
   .map-wrap{
-    order: -1;   /* map จะอยู่ก่อน sidebar */
-    height:50vh; /* กำหนดความสูง map บนมือถือ */
+    order: -1;   
+    height:50vh; 
   }
 
   .sidebar{
@@ -63,11 +62,11 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
     max-height:50vh;
     font-size:14px;
     overflow:auto;
-    -webkit-overflow-scrolling: touch; /* smooth scroll iOS */
+    -webkit-overflow-scrolling: touch; 
   }
 
   .logo{font-size:18px;}
-  .btn, .btn.alt{font-size:13px;padding:10px;} /* touch target ใหญ่ขึ้น */
+  .btn, .btn.alt{font-size:13px;padding:10px;} 
   #search,#searchStart{font-size:14px;padding:10px;}
   .route-card{padding:10px;}
   .routes{
@@ -102,10 +101,10 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
     max-height:50vh;
     font-size:14px;
     overflow:auto;
-    -webkit-overflow-scrolling: touch; /* smooth scroll iOS */
+    -webkit-overflow-scrolling: touch; 
   }
   .logo{font-size:18px;}
-  .btn, .btn.alt{font-size:13px;padding:10px;} /* touch target ใหญ่ขึ้น */
+  .btn, .btn.alt{font-size:13px;padding:10px;} 
   #search,#searchStart{font-size:14px;padding:10px;}
   .route-card{padding:10px;}
   .routes{
@@ -161,8 +160,6 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
     <div class="search-row">
       <input id="search" placeholder="ค้นหาปลายทาง..." />
     </div>
-
-    <div class="chips" id="popular"></div>
 
     <div class="controls-row">
       <select id="vehicle"></select>
@@ -329,16 +326,6 @@ for(const k in vehicleRates){
   opt.textContent = vehicleNames[currentLang][k] || k;
   sel.appendChild(opt);
 }
-
-
-  // popular chips
-  const pop = document.getElementById("popular"); pop.innerHTML = "";
-  i18n[currentLang].popular.forEach(p => {
-    const el = document.createElement("div"); el.className="chip"; el.textContent = p;
-    el.onclick = ()=>{ document.getElementById('search').value = p; triggerTextSearch(p); };
-    pop.appendChild(el);
-  });
-
   // ensure routes list placeholder
   if(!lastRoutes || lastRoutes.length===0){
     document.getElementById('routesList').textContent = i18n[currentLang].noRoute;
