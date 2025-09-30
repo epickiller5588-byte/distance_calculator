@@ -18,7 +18,7 @@ body {
 .map-wrap {
   order: -1;
   width: 100%;
-  height: 55vh; /* ให้ใหญ่ขึ้น */
+  height: 55vh;
   margin-bottom: 10px;
 }
 
@@ -119,8 +119,7 @@ input, select, button {
   </main>
 
   <aside class="sidebar" aria-label="sidebar">
-      <button id="btn-lang">🌐 English</button>
-    </div>
+    <button id="btn-lang">🌐 English</button>
 
     <div class="section-title" id="lbl-origin">ต้นทาง</div>
     <div class="search-row">
@@ -141,7 +140,6 @@ input, select, button {
 
     <button id="btn-toggle-fare" class="btn alt">แสดง/ซ่อนตารางราคา</button>
 
-    <div class="section-title" style="margin-top:12px" id="lbl-recommend">เส้นทางที่แนะนำ</div>
     <div class="routes" id="routesList"></div>
   </aside>
 </div>
@@ -180,7 +178,6 @@ const i18n = {
     calc:"คำนวณ",
     reset:"รีเซ็ต",
     fareTable:"ตารางราคา",
-    popular:["หาดป่าตอง","พระใหญ่ (Big Buddha)","วัดฉลอง (Wat Chalong)"],
     noRoute:"ยังไม่มีเส้นทาง",
     onlyPhuket:"กรุณาเลือกตำแหน่งในภูเก็ตเท่านั้น",
     outsidePhuket:"ตำแหน่งอยู่นอกภูเก็ต",
@@ -205,7 +202,6 @@ const i18n = {
     calc:"Calculate",
     reset:"Reset",
     fareTable:"Fare Table",
-    popular:["Patong Beach","Big Buddha","Wat Chalong"],
     noRoute:"No routes yet",
     onlyPhuket:"Please select a location within Phuket only",
     outsidePhuket:"Location is outside Phuket",
@@ -228,7 +224,6 @@ let currentLang = "th";
 
 // ------------------ Utilities ------------------
 function km(m){ return (m/1000).toFixed(1); }
-
 function calculateFare(route, vehicleKey){
   const v = vehicleRates[vehicleKey];
   if(!v) return 0;
@@ -246,9 +241,8 @@ function applyLanguage(){
   document.getElementById("btn-calc").textContent = i18n[currentLang].calc;
   document.getElementById("btn-reset").textContent = i18n[currentLang].reset;
   document.getElementById("fare-title").textContent = i18n[currentLang].fareTable;
-  document.getElementById("lbl-origin").textContent = i18n[currentLang].start;
-  document.getElementById("lbl-dest").textContent = i18n[currentLang].search;
-  document.getElementById("lbl-recommend").textContent = i18n[currentLang].routeLabel;
+  document.getElementById("lbl-origin").textContent = i18n[currentLang].originLabel;
+  document.getElementById("lbl-dest").textContent = i18n[currentLang].destinationLabel;
   document.getElementById("legend-title").textContent = i18n[currentLang].traffic;
   document.getElementById("legend-fast").textContent = i18n[currentLang].fast;
   document.getElementById("legend-moderate").textContent = i18n[currentLang].moderate;
@@ -278,19 +272,15 @@ function applyLanguage(){
     sel.appendChild(opt);
   }
 
-  const pop = document.getElementById("popular"); pop.innerHTML = "";
-  i18n[currentLang].popular.forEach(p => {
-    const el = document.createElement("div"); el.className="chip"; el.textContent = p;
-    el.onclick = ()=>{ document.getElementById('search').value = p; triggerTextSearch(p); };
-    pop.appendChild(el);
-  });
-
   if(!lastRoutes || lastRoutes.length===0){
     document.getElementById('routesList').textContent = i18n[currentLang].noRoute;
   }
 
   renderFareTable();
 }
+
+// --- ส่วน Map / Routing / Controls เหมือนเดิม ---
+
 
 function renderFareTable(){
   const tbody = document.getElementById('fareRows'); tbody.innerHTML = '';
