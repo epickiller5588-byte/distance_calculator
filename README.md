@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="utf-8" />
@@ -15,6 +14,46 @@ body {
   line-height: 1.4;
 }
 
+/* Map ครึ่งจอเต็ม */
+.map-wrap {
+  order: -1;
+  width: 100%;
+  height: 55vh; /* ให้ใหญ่ขึ้น */
+  margin-bottom: 10px;
+}
+
+/* Traffic Legend เล็กลง */
+.legend {
+  font-size: 11px;
+  padding: 4px 6px;
+  background: rgba(255,255,255,0.85);
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  bottom: 8px;
+  left: 8px;
+}
+
+/* ปุ่มไม่เกะกะ */
+.controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.controls-row .btn {
+  flex: 1;
+  min-width: 100px;
+  font-size: 14px;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+/* Sidebar ไม่ยาวเกิน */
+.sidebar {
+  width: auto;
+  max-height: 45vh;
+  overflow-y: auto;
+  padding: 12px;
+}
 input, select, button {
   font-size: clamp(13px, 2.5vw, 15px);
   padding: clamp(8px, 2vw, 12px);
@@ -80,7 +119,6 @@ input, select, button {
   </main>
 
   <aside class="sidebar" aria-label="sidebar">
-    <div class="logo">Trip Roule — Phuket demo
       <button id="btn-lang">🌐 English</button>
     </div>
 
@@ -94,9 +132,7 @@ input, select, button {
     <div class="search-row">
       <input id="search" placeholder="ค้นหาปลายทาง..." />
     </div>
-
-    <div class="chips" id="popular"></div>
-
+    
     <div class="controls-row">
       <select id="vehicle"></select>
       <button id="btn-calc" class="btn">คำนวณ</button>
