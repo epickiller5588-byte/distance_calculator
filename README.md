@@ -1,3 +1,4 @@
+
 <html lang="th">
 <head>
 <meta charset="utf-8" />
@@ -8,130 +9,118 @@
   --accent:#1e88e5; --muted:#6b7280; --card:#ffffff; --bg:#f6f8fb;
   --rounded:12px;
 }
-/* Base responsive typography */
-body {
-  font-size: clamp(14px, 2vw, 16px);
-  line-height: 1.4;
-}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Sarabun",sans-serif;background:var(--bg);color:#112;}
+.wrap{display:flex;height:100vh;gap:12px;padding:18px;box-sizing:border-box;}
+.sidebar{width:420px;min-width:320px;background:var(--card);border-radius:var(--rounded);box-shadow:0 8px 24px rgba(15,23,42,.08);padding:20px;display:flex;flex-direction:column;gap:12px;overflow:auto;}
+.logo{font-weight:700;font-size:20px;display:flex;align-items:center;gap:8px;position:relative;}
+#btn-lang{position:absolute; top:0; right:0;padding:6px 10px;font-size:12px;background:#1e88e5; color:#fff;border:none; border-radius:6px;cursor:pointer}
+.search-row{display:flex;gap:8px;align-items:center}
+#search,#searchStart{flex:1;padding:10px 12px;border-radius:10px;border:1px solid #e6e9ee;font-size:15px}
+.btn{padding:9px 12px;border-radius:10px;border:0;background:var(--accent);color:#fff;cursor:pointer;font-size:14px}
+.btn.alt{background:#eef; color:var(--accent); border:1px solid #d6e6ff}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;border:1px solid #eef;background:#fff;cursor:pointer;font-size:14px}
+.section-title{font-weight:700;margin:6px 0;color:#0b2540}
+.controls-row{display:flex;gap:8px;align-items:center}
+select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
+.routes{margin-top:8px;display:flex;flex-direction:column;gap:8px;overflow:auto;max-height:30vh;padding-right:6px}
+.route-card{background:#fbfdff;border-radius:10px;padding:12px;border:1px solid #eef;cursor:pointer;display:flex;justify-content:space-between;align-items:center;flex-direction:column}
+.route-card.selected{outline:3px solid rgba(30,136,229,.12)}
+.route-left{display:flex;flex-direction:column;width:100%;}
+.route-title{font-weight:700}
+.route-meta{color:var(--muted);font-size:13px}
+.fare-pill{font-weight:700;color:var(--accent)}
+#poiList{margin-top:6px;display:flex;flex-direction:column;gap:6px;max-height:150px;overflow:auto}
+.map-wrap{flex:1;position:relative;border-radius:var(--rounded);overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.06);}
+#map{width:100%;height:100%}
+.fare-table{position:absolute;right:24px;bottom:24px;background:var(--card);padding:14px;border-radius:12px;box-shadow:0 8px 24px rgba(15,23,42,.12);min-width:220px;max-width:90vw;overflow:auto;z-index:10;}
+.fare-table table{border-collapse:collapse;width:100%;font-size:14px}
+.fare-table th{font-weight:700;text-align:left;padding:6px 4px;color:#123}
+.fare-table td{padding:6px 4px;color:#334}
+.legend{position:absolute;left:20px;bottom:24px;background:#fff;padding:8px;border-radius:8px;border:1px solid #eef;display:flex;gap:8px;align-items:center;font-size:13px;flex-wrap:wrap;z-index:10;}
+.dot{width:36px;height:6px;border-radius:6px}
+.fast{background:linear-gradient(90deg,#2ecc71,#1faa4a)}
+.moderate{background:linear-gradient(90deg,#f1c40f,#f39c12)}
+.heavy{background:linear-gradient(90deg,#e74c3c,#c0392b)}
 
-/* Map ครึ่งจอเต็ม */
-.map-wrap {
-  order: -1;
-  width: 100%;
-  height: 55vh;
-  margin-bottom: 10px;
-}
-
-/* Traffic Legend เล็กลง */
-.legend {
-  font-size: 11px;
-  padding: 4px 6px;
-  background: rgba(255,255,255,0.85);
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-  bottom: 8px;
-  left: 8px;
-}
-
-/* ปุ่มไม่เกะกะ */
-.controls-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.controls-row .btn {
-  flex: 1;
-  min-width: 100px;
-  font-size: 14px;
-  padding: 8px 10px;
-  border-radius: 8px;
-}
-
-/* Sidebar ไม่ยาวเกิน */
-.sidebar {
-  width: auto;
-  max-height: 45vh;
-  overflow-y: auto;
-  padding: 12px;
-}
-input, select, button {
-  font-size: clamp(13px, 2.5vw, 15px);
-  padding: clamp(8px, 2vw, 12px);
-}
-
-/* Scroll sidebar smoothly on mobile */
-.sidebar {
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Responsive */
+/* ---------- Responsive ---------- */
 @media(max-width:1000px){ 
   .wrap{flex-direction:column;padding:12px;} 
-  .map-wrap{order:-1;height:50vh;margin-bottom:12px;}
-  .sidebar{width:auto;min-width:unset;max-height:50vh;overflow-y:auto;}
+  .sidebar{width:auto;min-width:unset;max-height:46vh;overflow:auto; -webkit-overflow-scrolling: touch;} 
   .fare-table{right:12px;bottom:12px;min-width:150px;} 
   .controls-row{flex-direction:column;align-items:stretch;} 
-  select, .btn{width:100%;}
-  .routes{max-height:25vh;}
+  select{width:100%;}
+  .routes{max-height:25vh;overflow:auto; -webkit-overflow-scrolling: touch;}
 }
 
 @media(max-width:600px){
-  .map-wrap{height:42vh;}
-  .sidebar{max-height:58vh;font-size:14px;padding:12px;}
-  .search-row{flex-direction:column;gap:6px;}
-  #search,#searchStart{width:100%;}
-  .btn,.btn.alt{font-size:13px;padding:10px;width:100%;}
-  .routes{max-height:22vh;}
-  .fare-table{bottom:10px; right:10px; min-width:120px; max-width:90vw; font-size:13px; padding:10px;}
-  .legend{bottom:10px; left:10px; font-size:12px; padding:6px;}
-}
-
-@media(max-width:480px){
-  .map-wrap{height:38vh;}
-  .sidebar{max-height:60vh;padding:10px;font-size:13px;}
-  .logo{font-size:16px;}
-  .btn,.btn.alt{font-size:12px;padding:9px;}
-  .chip{font-size:12px;padding:6px 8px;}
+  .sidebar{
+    padding:12px;
+    max-height:50vh;
+    font-size:14px;
+    overflow:auto;
+    -webkit-overflow-scrolling: touch; /* smooth scroll iOS */
+  }
+  .logo{font-size:18px;}
+  .btn, .btn.alt{font-size:13px;padding:10px;} /* touch target ใหญ่ขึ้น */
+  #search,#searchStart{font-size:14px;padding:10px;}
   .route-card{padding:10px;}
+  .routes{
+    max-height:22vh;
+    overflow:auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .fare-table{
+    bottom:10px;
+    right:10px;
+    min-width:120px;
+    max-width:90vw;
+    font-size:13px;
+    padding:10px;
+  }
+  .legend{
+    bottom:10px;
+    left:10px;
+    font-size:12px;
+    padding:6px;
+  }
+  select{
+    font-size:14px;
+    padding:8px;
+  }
 }
 
 </style>
+
 </head>
 <body>
 <div class="wrap">
-  <main class="map-wrap">
-    <div id="map"></div>
-    <div class="fare-table" id="fareTable">
-      <div id="fare-title" style="font-weight:800;margin-bottom:6px">ตารางราคา</div>
-      <table>
-        <thead>
-          <tr><th id="th-vehicle">Vehicle</th><th id="th-base">Base</th><th id="th-perkm">Per km</th></tr>
-        </thead>
-        <tbody id="fareRows"></tbody>
-      </table>
-    </div>
-    <div class="legend" id="legend">
-      <div style="font-weight:700;margin-right:8px" id="legend-title">Traffic</div>
-      <div class="dot fast"></div><div style="font-size:13px;color:var(--muted)" id="legend-fast">Fast</div>
-      <div class="dot moderate"></div><div style="font-size:13px;color:var(--muted)" id="legend-moderate">Moderate</div>
-      <div class="dot heavy"></div><div style="font-size:13px;color:var(--muted)" id="legend-heavy">Heavy</div>
-    </div>
-  </main>
-
   <aside class="sidebar" aria-label="sidebar">
-    <button id="btn-lang">🌐 English</button>
+    <div class="logo">Trip Roule — Phuket demo
+      <button id="btn-lang">🌐 English</button>
+    </div>
 
     <div class="section-title" id="lbl-origin">ต้นทาง</div>
     <div class="search-row">
       <input id="searchStart" placeholder="เลือกต้นทาง..." />
-      <button id="btn-current" class="btn alt" title="ใช้ตำแหน่งปัจจุบัน">📍</button>
+     <button 
+  id="btn-current" 
+  class="btn alt" 
+  title="ใช้ตำแหน่งปัจจุบัน" 
+  aria-label="ใช้ตำแหน่งปัจจุบัน"
+>
+  📍
+</button>
+
     </div>
 
     <div class="section-title" id="lbl-dest">ปลายทาง</div>
     <div class="search-row">
       <input id="search" placeholder="ค้นหาปลายทาง..." />
     </div>
-    
+
+    <div class="chips" id="popular"></div>
+
     <div class="controls-row">
       <select id="vehicle"></select>
       <button id="btn-calc" class="btn">คำนวณ</button>
@@ -140,8 +129,28 @@ input, select, button {
 
     <button id="btn-toggle-fare" class="btn alt">แสดง/ซ่อนตารางราคา</button>
 
+    <div class="section-title" style="margin-top:12px" id="lbl-recommend">เส้นทางที่แนะนำ</div>
     <div class="routes" id="routesList"></div>
   </aside>
+
+  <main class="map-wrap">
+    <div id="map"></div>
+
+    <div class="fare-table" id="fareTable">
+      <div id="fare-title" style="font-weight:800;margin-bottom:6px">ตารางราคา</div>
+      <table>
+        <thead><tr><th id="th-vehicle">Vehicle</th><th id="th-base">Base</th><th id="th-perkm">Per km</th></tr></thead>
+        <tbody id="fareRows"></tbody>
+      </table>
+    </div>
+
+    <div class="legend" id="legend">
+      <div style="font-weight:700;margin-right:8px" id="legend-title">Traffic</div>
+      <div class="dot fast"></div><div style="font-size:13px;color:var(--muted)" id="legend-fast">Fast</div>
+      <div class="dot moderate"></div><div style="font-size:13px;color:var(--muted)" id="legend-moderate">Moderate</div>
+      <div class="dot heavy"></div><div style="font-size:13px;color:var(--muted)" id="legend-heavy">Heavy</div>
+    </div>
+  </main>
 </div>
 
 <script>
@@ -178,6 +187,7 @@ const i18n = {
     calc:"คำนวณ",
     reset:"รีเซ็ต",
     fareTable:"ตารางราคา",
+    popular:["หาดป่าตอง","พระใหญ่ (Big Buddha)","วัดฉลอง (Wat Chalong)"],
     noRoute:"ยังไม่มีเส้นทาง",
     onlyPhuket:"กรุณาเลือกตำแหน่งในภูเก็ตเท่านั้น",
     outsidePhuket:"ตำแหน่งอยู่นอกภูเก็ต",
@@ -202,6 +212,7 @@ const i18n = {
     calc:"Calculate",
     reset:"Reset",
     fareTable:"Fare Table",
+    popular:["Patong Beach","Big Buddha","Wat Chalong"],
     noRoute:"No routes yet",
     onlyPhuket:"Please select a location within Phuket only",
     outsidePhuket:"Location is outside Phuket",
@@ -232,7 +243,6 @@ function calculateFare(route, vehicleKey){
   let fare = v.base + Math.max(0, kmDistance - v.freeKm) * v.perKm;
   return Math.max(Math.round(fare), v.min);
 }
-
 // ------------------ UI: language & fare table ------------------
 function applyLanguage(){
   document.getElementById("btn-lang").textContent = (currentLang==="th" ? "🌐 English" : "🌐 ภาษาไทย");
@@ -241,8 +251,9 @@ function applyLanguage(){
   document.getElementById("btn-calc").textContent = i18n[currentLang].calc;
   document.getElementById("btn-reset").textContent = i18n[currentLang].reset;
   document.getElementById("fare-title").textContent = i18n[currentLang].fareTable;
-  document.getElementById("lbl-origin").textContent = i18n[currentLang].originLabel;
-  document.getElementById("lbl-dest").textContent = i18n[currentLang].destinationLabel;
+  document.getElementById("lbl-origin").textContent = i18n[currentLang].start;
+  document.getElementById("lbl-dest").textContent = i18n[currentLang].search;
+  document.getElementById("lbl-recommend").textContent = i18n[currentLang].routeLabel;
   document.getElementById("legend-title").textContent = i18n[currentLang].traffic;
   document.getElementById("legend-fast").textContent = i18n[currentLang].fast;
   document.getElementById("legend-moderate").textContent = i18n[currentLang].moderate;
@@ -253,34 +264,45 @@ function applyLanguage(){
   document.getElementById("btn-toggle-fare").textContent = i18n[currentLang].toggleFare;
 
   const btnCurrent = document.getElementById('btn-current');
-  btnCurrent.title = i18n[currentLang].currentPosBtn;
-  btnCurrent.setAttribute('aria-label', i18n[currentLang].currentPosBtn);
+btnCurrent.title = i18n[currentLang].currentPosBtn;
+btnCurrent.setAttribute('aria-label', i18n[currentLang].currentPosBtn);
 
-  const sel = document.getElementById("vehicle");
-  sel.innerHTML = "";
 
-  const placeholder = document.createElement("option");
-  placeholder.textContent = (currentLang === "th" ? "เลือกประเภทยานพาหนะ" : "Select vehicle type");
-  placeholder.disabled = true;
-  placeholder.selected = true;
-  sel.appendChild(placeholder);
+  // populate vehicle select with placeholder
+const sel = document.getElementById("vehicle");
+sel.innerHTML = "";
 
-  for(const k in vehicleRates){
-    const opt = document.createElement("option");
-    opt.value = k;
-    opt.textContent = vehicleNames[currentLang][k] || k;
-    sel.appendChild(opt);
-  }
+// เพิ่ม placeholder เป็น option disabled
+const placeholder = document.createElement("option");
+placeholder.textContent = (currentLang === "th" ? "เลือกประเภทยานพาหนะ" : "Select vehicle type");
+placeholder.disabled = true;
+placeholder.selected = true;
+sel.appendChild(placeholder);
 
+// เพิ่มตัวเลือกรถ
+for(const k in vehicleRates){
+  const opt = document.createElement("option");
+  opt.value = k;
+  opt.textContent = vehicleNames[currentLang][k] || k;
+  sel.appendChild(opt);
+}
+
+
+  // popular chips
+  const pop = document.getElementById("popular"); pop.innerHTML = "";
+  i18n[currentLang].popular.forEach(p => {
+    const el = document.createElement("div"); el.className="chip"; el.textContent = p;
+    el.onclick = ()=>{ document.getElementById('search').value = p; triggerTextSearch(p); };
+    pop.appendChild(el);
+  });
+
+  // ensure routes list placeholder
   if(!lastRoutes || lastRoutes.length===0){
     document.getElementById('routesList').textContent = i18n[currentLang].noRoute;
   }
 
   renderFareTable();
 }
-
-// --- ส่วน Map / Routing / Controls เหมือนเดิม ---
-
 
 function renderFareTable(){
   const tbody = document.getElementById('fareRows'); tbody.innerHTML = '';
@@ -343,22 +365,27 @@ function initMap(){
       map.panTo(loc);
       if(currentPos) computeRoutes(currentPos, loc);
     } else {
+      // free-text fallback
       triggerTextSearch(document.getElementById('search').value);
     }
   });
 
+  // try geolocation
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(p=>{
       currentPos = {lat:p.coords.latitude, lng:p.coords.longitude};
       const posLatLng = new google.maps.LatLng(currentPos.lat, currentPos.lng);
-      if(!phuketBounds.contains(posLatLng)) return;
+      if(!phuketBounds.contains(posLatLng)) return; // if outside phuket, ignore
       if(!markerA){ markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}}); }
       markerA.setPosition(posLatLng); markerA.setMap(map);
       markerA.setTitle('You');
       map.setCenter(posLatLng);
+    }, err => {
+      // ignore geolocation failure quietly
     });
   }
 
+  // current button
   document.getElementById('btn-current').addEventListener('click', () => {
     if(navigator.geolocation){
       navigator.geolocation.getCurrentPosition(p=>{
@@ -369,31 +396,37 @@ function initMap(){
         markerA.setPosition(posLatLng); markerA.setMap(map);
         map.panTo(posLatLng);
         if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
-      });
+      }, err => { alert('Unable to retrieve your location'); });
     } else alert('Geolocation not supported');
   });
 
+  // calc button
   document.getElementById('btn-calc').addEventListener('click', () => {
     if(currentPos && markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
     renderFareTable();
   });
 
+  // reset button
   document.getElementById('btn-reset').addEventListener('click', () => {
     document.getElementById('search').value=''; document.getElementById('searchStart').value='';
     directionsRenderer.set('directions', null);
     lastRoutes = []; selectedRouteIndex = 0;
     document.getElementById('routesList').textContent = i18n[currentLang].noRoute;
+
     polyLines.forEach(p=>p.setMap(null)); polyLines = [];
     poiMarkers.forEach(m=>m.setMap(null)); poiMarkers = [];
+
     if(markerA){ markerA.setMap(null); markerA = null; }
     if(markerB){ markerB.setMap(null); markerB = null; }
   });
 
+  // toggle fare table
   document.getElementById('btn-toggle-fare').addEventListener('click', () => {
     const f = document.getElementById('fareTable');
     f.style.display = (f.style.display === 'none' ? 'block' : 'none');
   });
 
+  // vehicle change: update fare labels in route cards without recomputing route
   document.getElementById('vehicle').addEventListener('change', updateRouteFareLabels);
 
   applyLanguage();
@@ -426,6 +459,7 @@ function computeRoutes(origin, dest){
     provideRouteAlternatives: true
   }, (res,status) => {
     if(status === 'OK'){
+      // clear existing visuals
       directionsRenderer.set('directions', null);
       polyLines.forEach(p=>p.setMap(null)); polyLines=[];
       lastRoutes = res.routes;
@@ -457,11 +491,13 @@ function renderRoutes(routes, vehicleKey){
     container.appendChild(card);
   });
 
+  // draw first route by default
   selectedRouteIndex = 0;
   drawPolyline(routes[0], 0);
   highlightSelected();
 }
 
+// draw polyline (use index to pick color consistently)
 function drawPolyline(route, index){
   polyLines.forEach(p=>p.setMap(null)); polyLines=[];
   const colors = ['#2ecc71','#f1c40f','#e74c3c','#1e88e5','#9b59b6'];
@@ -470,33 +506,43 @@ function drawPolyline(route, index){
     path: route.overview_path,
     map: map,
     strokeColor: color,
-    strokeOpacity: 0.8,
-    strokeWeight: 6
+    strokeWeight: 6,
+    strokeOpacity: 0.8  // <-- corrected property
   });
   polyLines.push(pl);
-  const bounds = new google.maps.LatLngBounds();
-  route.overview_path.forEach(p=>bounds.extend(p));
-  map.fitBounds(bounds);
+  map.fitBounds(route.bounds);
 }
 
+// highlight selected card
 function highlightSelected(){
-  const cards = document.querySelectorAll('.route-card');
-  cards.forEach((c,i)=>{ c.style.borderColor = (i===selectedRouteIndex?'#1e88e5':'#ccc'); });
+  document.querySelectorAll('.route-card').forEach((c,i)=>{ c.classList.toggle('selected', i===selectedRouteIndex); });
 }
 
-// ------------------ Update fare labels on vehicle change ------------------
+// update fare labels in route cards when vehicle selection changes
 function updateRouteFareLabels(){
-  if(lastRoutes.length===0) return;
-  const v = document.getElementById('vehicle').value;
-  const cards = document.querySelectorAll('.route-card');
-  lastRoutes.forEach((r,i)=>{
-    const fareText = `${calculateFare(r, v)} ฿`;
-    cards[i].querySelector('.fare-pill').textContent = fareText;
+  const vehicleKey = document.getElementById('vehicle').value;
+  document.querySelectorAll('.route-card').forEach(card=>{
+    const idx = parseInt(card.dataset.routeIndex, 10);
+    if(isNaN(idx) || !lastRoutes[idx]) return;
+    const newFare = calculateFare(lastRoutes[idx], vehicleKey);
+    const pill = card.querySelector('.fare-pill');
+    if(pill) pill.textContent = `${newFare} ฿`;
   });
 }
 
+// initialize lang button and load map script callback
+document.getElementById('btn-lang').addEventListener('click', ()=>{
+  currentLang = (currentLang === 'th' ? 'en' : 'th');
+  applyLanguage();
+});
+
+// expose initMap for Google callback
+window.initMap = initMap;
+window.applyLanguage = applyLanguage;
+window.calculateFare = calculateFare;
 </script>
 
+<!-- Replace YOUR_API_KEY_HERE with your Google Maps API key (restrict it appropriately in Cloud Console) -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcAtU6iQwn7aUsNwCHST73U2pqKbImiJM&libraries=places&callback=initMap" async defer></script>
 </body>
 </html>
