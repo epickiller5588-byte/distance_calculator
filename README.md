@@ -9,59 +9,53 @@
   --accent:#1e88e5; --muted:#6b7280; --card:#ffffff; --bg:#f6f8fb;
   --rounded:12px;
 }
-html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Sarabun",sans-serif;background:var(--bg);color:#112;}
-.wrap{display:flex;height:100vh;gap:12px;padding:12px;box-sizing:border-box;}
-.sidebar{width:420px;min-width:320px;background:var(--card);border-radius:var(--rounded);box-shadow:0 8px 24px rgba(15,23,42,.08);padding:20px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;scroll-behavior:smooth;}
-.logo{font-weight:700;font-size:20px;display:flex;align-items:center;gap:8px;position:relative;}
-#btn-lang{position:absolute; top:0; right:0;padding:6px 10px;font-size:12px;background:#1e88e5; color:#fff;border:none; border-radius:6px;cursor:pointer}
-.search-row{display:flex;gap:8px;align-items:center}
-#search,#searchStart{flex:1;padding:10px 12px;border-radius:10px;border:1px solid #e6e9ee;font-size:15px}
-.btn{padding:9px 12px;border-radius:10px;border:0;background:var(--accent);color:#fff;cursor:pointer;font-size:14px}
-.btn.alt{background:#eef; color:var(--accent); border:1px solid #d6e6ff}
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;border:1px solid #eef;background:#fff;cursor:pointer;font-size:14px}
-.section-title{font-weight:700;margin:6px 0;color:#0b2540}
-.controls-row{display:flex;gap:8px;align-items:center}
-select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
-.routes{margin-top:8px;display:flex;flex-direction:column;gap:8px;overflow:auto;max-height:30vh;padding-right:6px}
-.route-card{background:#fbfdff;border-radius:10px;padding:12px;border:1px solid #eef;cursor:pointer;display:flex;justify-content:space-between;align-items:center;flex-direction:column}
-.route-card.selected{outline:3px solid rgba(30,136,229,.12)}
-.route-left{display:flex;flex-direction:column;width:100%;}
-.route-title{font-weight:700}
-.route-meta{color:var(--muted);font-size:13px}
-.fare-pill{font-weight:700;color:var(--accent)}
-.map-wrap{flex:1;position:relative;border-radius:var(--rounded);overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.06);}
-#map{width:100%;height:100%}
-.fare-table{position:absolute;right:24px;bottom:24px;background:var(--card);padding:14px;border-radius:12px;box-shadow:0 8px 24px rgba(15,23,42,.12);min-width:220px;max-width:90vw;overflow:auto;z-index:10;}
-.fare-table table{border-collapse:collapse;width:100%;font-size:14px}
-.fare-table th{font-weight:700;text-align:left;padding:6px 4px;color:#123}
-.fare-table td{padding:6px 4px;color:#334}
-.legend{position:absolute;left:20px;bottom:24px;background:#fff;padding:8px;border-radius:8px;border:1px solid #eef;display:flex;gap:8px;align-items:center;font-size:13px;flex-wrap:wrap;z-index:10;}
-.dot{width:36px;height:6px;border-radius:6px}
-.fast{background:linear-gradient(90deg,#2ecc71,#1faa4a)}
-.moderate{background:linear-gradient(90deg,#f1c40f,#f39c12)}
-.heavy{background:linear-gradient(90deg,#e74c3c,#c0392b)}
+/* Base responsive typography */
+body {
+  font-size: clamp(14px, 2vw, 16px);
+  line-height: 1.4;
+}
+
+input, select, button {
+  font-size: clamp(13px, 2.5vw, 15px);
+  padding: clamp(8px, 2vw, 12px);
+}
+
+/* Scroll sidebar smoothly on mobile */
+.sidebar {
+  -webkit-overflow-scrolling: touch;
+}
 
 /* Responsive */
 @media(max-width:1000px){ 
   .wrap{flex-direction:column;padding:12px;} 
   .map-wrap{order:-1;height:50vh;margin-bottom:12px;}
-  .sidebar{width:auto;min-width:unset;max-height:50vh;overflow-y:auto;scroll-behavior:smooth;}
+  .sidebar{width:auto;min-width:unset;max-height:50vh;overflow-y:auto;}
   .fare-table{right:12px;bottom:12px;min-width:150px;} 
   .controls-row{flex-direction:column;align-items:stretch;} 
-  select{width:100%;}
+  select, .btn{width:100%;}
   .routes{max-height:25vh;}
 }
 
 @media(max-width:600px){
-  .map-wrap{height:40vh;}
-  .sidebar{max-height:60vh;font-size:14px;padding:12px;}
-  #search,#searchStart{font-size:14px;padding:10px;}
-  .btn,.btn.alt{font-size:13px;padding:10px;}
+  .map-wrap{height:42vh;}
+  .sidebar{max-height:58vh;font-size:14px;padding:12px;}
+  .search-row{flex-direction:column;gap:6px;}
+  #search,#searchStart{width:100%;}
+  .btn,.btn.alt{font-size:13px;padding:10px;width:100%;}
   .routes{max-height:22vh;}
   .fare-table{bottom:10px; right:10px; min-width:120px; max-width:90vw; font-size:13px; padding:10px;}
   .legend{bottom:10px; left:10px; font-size:12px; padding:6px;}
 }
+
+@media(max-width:480px){
+  .map-wrap{height:38vh;}
+  .sidebar{max-height:60vh;padding:10px;font-size:13px;}
+  .logo{font-size:16px;}
+  .btn,.btn.alt{font-size:12px;padding:9px;}
+  .chip{font-size:12px;padding:6px 8px;}
+  .route-card{padding:10px;}
+}
+
 </style>
 </head>
 <body>
