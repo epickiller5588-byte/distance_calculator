@@ -345,7 +345,7 @@ document.getElementById('btn-current').addEventListener('click', ()=>{
 
 // Load Google Maps script dynamically
 const script = document.createElement('script');
-script.src="https://maps.googleapis.com/maps/api/js?key==AIzaSyDcAtU6iQwn7aUsNwCHST73U2pqKbImiJM&libraries=places&callback=initMap";
+script.src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcAtU6iQwn7aUsNwCHST73U2pqKbImiJM&libraries=places&callback=initMap";
 script.async=true; document.head.appendChild(script);
 
 applyLanguage();
