@@ -466,8 +466,9 @@ function initMap(){
       currentPos = {lat:p.coords.latitude, lng:p.coords.longitude};
       const pos = new google.maps.LatLng(currentPos.lat, currentPos.lng);
       if(!phuketBounds.contains(pos)){ alert(i18n[currentLang].outsidePhuket); return; }
-      if(!markerA) markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});
-      markerA.setPosition(pos); markerA.setMap(map); map.panTo(pos);
+     if(!markerA) markerA = new google.maps.Marker({ map: map });
+      markerA.setPosition(loc);
+      markerA.setMap(map); map.panTo(pos);
       if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
     }, ()=>{ alert('Unable to retrieve your location'); });
   });
@@ -522,8 +523,9 @@ function triggerTextSearch(txt){
   service.textSearch({query:txt, bounds: map.getBounds(), region:'th'}, (results,status)=>{
     if(status==='OK' && results[0]){
       const loc = results[0].geometry.location;
-      if(!markerB) markerB = new google.maps.Marker({map, icon:'http://maps.google.com/mapfiles/ms/icons/red-dot.png'});
-      markerB.setPosition(loc); markerB.setMap(map);
+     if(!markerB) markerB = new google.maps.Marker({ map: map });
+      markerB.setPosition(loc);  
+      markerB.setMap(map);
       map.panTo(loc);
       if(currentPos) computeRoutes(currentPos, loc);
     } else {
