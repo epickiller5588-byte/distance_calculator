@@ -198,7 +198,6 @@ select{
 <body>
 <div class="wrap">
   <aside class="sidebar" aria-label="controls">
-    <div class="logo">Trip Roule — Phuket demo
       <button id="btn-lang">🌐 English</button>
     </div>
 
