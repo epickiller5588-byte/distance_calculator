@@ -8,6 +8,9 @@
 :root{
   --accent:#1e88e5; --muted:#6b7280; --card:#ffffff; --bg:#f6f8fb;
   --rounded:12px;
+h1, h2, h3 {
+  display: none;
+}
 
 html,body{
   height:100%;
