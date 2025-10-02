@@ -420,7 +420,7 @@ function initMap(){
     if(place?.geometry?.location){
       const loc = place.geometry.location;
       if(!phuketBounds.contains(loc)){ alert(i18n[currentLang].onlyPhuket); return; }
-      if(!markerA) markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});
+     if(!markerA) markerA = new google.maps.Marker({map});
       markerA.setPosition(loc); markerA.setMap(map);
       map.panTo(loc);
       currentPos = {lat:loc.lat(), lng:loc.lng()};
@@ -437,7 +437,7 @@ function initMap(){
     if(place?.geometry?.location){
       const loc = place.geometry.location;
       if(!phuketBounds.contains(loc)){ alert(i18n[currentLang].onlyPhuket); return; }
-      if(!markerB) markerB = new google.maps.Marker({map, icon:'http://maps.google.com/mapfiles/ms/icons/red-dot.png'});
+      if(!markerB) markerB = new google.maps.Marker({map}); // ใช้ default pin สีแดงของ Google Maps;
       markerB.setPosition(loc); markerB.setMap(map);
       map.panTo(loc);
       if(currentPos) computeRoutes(currentPos, loc);
