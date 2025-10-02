@@ -71,8 +71,6 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
       <input id="search" placeholder="ค้นหาปลายทาง..." aria-label="ปลายทาง">
     </div>
 
-    <div class="chips" id="popular" aria-hidden="false"></div>
-
     <div class="controls-row">
       <select id="vehicle" aria-label="เลือกยานพาหนะ"></select>
       <button id="btn-calc" class="btn">คำนวณ</button>
@@ -235,13 +233,6 @@ function applyLanguage(){
   // set a sensible default so price calculation works immediately
   sel.value = sel.querySelector('option[value="grabCar"]') ? 'grabCar' : sel.querySelector('option:not([disabled])').value;
 
-  // popular chips
-  const pop = document.getElementById("popular"); pop.innerHTML = "";
-  i18n[currentLang].popular.forEach(p => {
-    const el = document.createElement("div"); el.className="chip"; el.textContent = p;
-    el.onclick = ()=>{ document.getElementById('search').value = p; triggerTextSearch(p); };
-    pop.appendChild(el);
-  });
 
   // ensure routes placeholder
   if(!lastRoutes || lastRoutes.length === 0){
