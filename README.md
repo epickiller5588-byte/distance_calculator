@@ -8,194 +8,48 @@
 :root{
   --accent:#1e88e5; --muted:#6b7280; --card:#ffffff; --bg:#f6f8fb;
   --rounded:12px;
-h1, h2, h3 {
-  display: none;
 }
-
-html,body{
-  height:100%;
-  margin:0;
-  font-family:Inter,system-ui,-apple-system,"Sarabun",sans-serif;
-  background:var(--bg);
-  color:#112;
-  overflow:hidden;
-}
-/* Layout */
-.wrap{
-  display:flex;
-  height:100vh;
-  gap:12px;
-  padding:8px;
-  box-sizing:border-box;
-  flex-direction:column;
-}
-.map-wrap{
-  flex:1;
-  position:relative;
-  border-radius:var(--rounded);
-  overflow:hidden;
-  box-shadow:0 8px 24px rgba(15,23,42,.06);
-  min-height:50vh;
-}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Sarabun",sans-serif;background:var(--bg);color:#112;}
+/* Layout: Desktop = split, Mobile = map top, controls bottom (locked viewport, no page scroll) */
+.wrap{display:flex;height:100vh;gap:12px;padding:12px;box-sizing:border-box;}
+.map-wrap{flex:1;position:relative;border-radius:var(--rounded);overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.06);min-height:320px;}
 #map{width:100%;height:100%}
-.sidebar{
-  width:100%;
-  max-height:45vh;
-  background:var(--card);
-  border-radius:var(--rounded);
-  box-shadow:0 8px 24px rgba(15,23,42,.08);
-  padding:12px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  overflow-y:auto;
-  scrollbar-width:thin;
-  scrollbar-color:var(--accent) #e6e9ee;
-}
-.sidebar::-webkit-scrollbar{
-  width:6px;
-}
-.sidebar::-webkit-scrollbar-track{
-  background:#e6e9ee;
-  border-radius:6px;
-}
-.sidebar::-webkit-scrollbar-thumb{
-  background:var(--accent);
-  border-radius:6px;
-}
-.logo{
-  font-weight:700;
-  font-size:18px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  position:relative;
-  margin-bottom:4px;
-}
-#btn-lang{
-  position:absolute;
-  top:0;
-  right:0;
-  padding:6px 10px;
-  font-size:12px;
-  background:var(--accent);
-  color:#fff;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-}
-.search-row{
-  display:flex;
-  gap:8px;
-  align-items:center;
-}
-#search,#searchStart{
-  flex:1;
-  padding:10px 12px;
-  border-radius:10px;
-  border:1px solid #e6e9ee;
-  font-size:15px;
-  outline:none;
-}
-#search:focus,#searchStart:focus{border-color:var(--accent);}
-.btn{
-  padding:9px 12px;
-  border-radius:10px;
-  border:0;
-  background:var(--accent);
-  color:#fff;
-  cursor:pointer;
-  font-size:14px;
-  flex-shrink:0;
-}
-.btn.alt{
-  background:#eef;
-  color:var(--accent);
-  border:1px solid #d6e6ff;
-}
-.controls-row{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  flex-wrap:wrap;
-}
-select{
-  padding:8px;
-  border-radius:8px;
-  border:1px solid #e6e9ee;
-  background:#fff;
-  flex:1;
-}
-.routes{
-  margin-top:8px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  overflow-y:auto;
-  max-height:20vh;
-  padding-right:4px;
-}
-.route-card{
-  background:#fbfdff;
-  border-radius:10px;
-  padding:10px;
-  border:1px solid #eef;
-  cursor:pointer;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-.route-card.selected{outline:3px solid rgba(30,136,229,.12);}
+.sidebar{width:420px;min-width:320px;background:var(--card);border-radius:var(--rounded);box-shadow:0 8px 24px rgba(15,23,42,.08);padding:16px;display:flex;flex-direction:column;gap:10px;overflow:auto;}
+.logo{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px;position:relative;}
+#btn-lang{position:absolute; top:0; right:0;padding:6px 10px;font-size:12px;background:var(--accent); color:#fff;border:none; border-radius:6px;cursor:pointer}
+.search-row{display:flex;gap:8px;align-items:center}
+#search,#searchStart{flex:1;padding:10px 12px;border-radius:10px;border:1px solid #e6e9ee;font-size:15px}
+.btn{padding:9px 12px;border-radius:10px;border:0;background:var(--accent);color:#fff;cursor:pointer;font-size:14px}
+.btn.alt{background:#eef; color:var(--accent); border:1px solid #d6e6ff}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:999px;border:1px solid #eef;background:#fff;cursor:pointer;font-size:14px}
+.section-title{font-weight:700;margin:6px 0;color:#0b2540}
+.controls-row{display:flex;gap:8px;align-items:center}
+select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
+.routes{margin-top:8px;display:flex;flex-direction:column;gap:8px;overflow:auto;max-height:30vh;padding-right:6px}
+.route-card{background:#fbfdff;border-radius:10px;padding:10px;border:1px solid #eef;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.route-card.selected{outline:3px solid rgba(30,136,229,.12)}
 .route-left{display:flex;flex-direction:column;width:100%;}
 .route-title{font-weight:700}
 .route-meta{color:var(--muted);font-size:13px}
 .fare-pill{font-weight:700;color:var(--accent)}
-.fare-table{
-  position:absolute;
-  right:12px;
-  bottom:12px;
-  background:var(--card);
-  padding:12px;
-  border-radius:12px;
-  box-shadow:0 8px 24px rgba(15,23,42,.12);
-  min-width:200px;
-  max-width:90vw;
-  overflow:auto;
-  z-index:10;
-  display:none;
-  font-size:14px;
-}
-.fare-table table{border-collapse:collapse;width:100%}
+.fare-table{position:absolute;right:18px;bottom:18px;background:var(--card);padding:12px;border-radius:12px;box-shadow:0 8px 24px rgba(15,23,42,.12);min-width:200px;max-width:90vw;overflow:auto;z-index:10;display:none}
+.fare-table table{border-collapse:collapse;width:100%;font-size:14px}
 .fare-table th{font-weight:700;text-align:left;padding:6px 4px;color:#123}
 .fare-table td{padding:6px 4px;color:#334}
-.legend{
-  position:absolute;
-  left:12px;
-  bottom:12px;
-  background:#fff;
-  padding:8px;
-  border-radius:8px;
-  border:1px solid #eef;
-  display:flex;
-  gap:6px;
-  align-items:center;
-  font-size:12px;
-  flex-wrap:wrap;
-  z-index:10;
-}
+.legend{position:absolute;left:18px;bottom:18px;background:#fff;padding:8px;border-radius:8px;border:1px solid #eef;display:flex;gap:8px;align-items:center;font-size:13px;flex-wrap:wrap;z-index:10;}
 .dot{width:36px;height:6px;border-radius:6px}
 .fast{background:linear-gradient(90deg,#2ecc71,#1faa4a)}
 .moderate{background:linear-gradient(90deg,#f1c40f,#f39c12)}
 .heavy{background:linear-gradient(90deg,#e74c3c,#c0392b)}
-@media(min-width:1000px){
-  .wrap{flex-direction:row;}
-  .map-wrap{height:auto;flex:1;}
-  .sidebar{width:420px;max-height:100%;overflow:auto;}
-  .routes{max-height:30vh;}
-  .fare-table{right:18px;bottom:18px;}
-  .legend{left:18px;bottom:18px;}
-}
 
+/* Responsive: mobile column layout with map on top and controls fixed bottom area */
+@media(max-width:1000px){
+  .wrap{flex-direction:column;padding:8px;}
+  .sidebar{width:auto;min-width:unset;max-height:40vh;}
+  .map-wrap{height:60vh;min-height:320px;}
+  .fare-table{right:10px;bottom:10px;min-width:140px;}
+}
 </style>
 </head>
 <body>
@@ -204,7 +58,6 @@ select{
     <div class="logo">Trip Roule — Phuket demo
       <button id="btn-lang">🌐 English</button>
     </div>
-
 
     <div class="section-title" id="lbl-origin">ต้นทาง</div>
     <div class="search-row">
@@ -216,6 +69,8 @@ select{
     <div class="search-row">
       <input id="search" placeholder="ค้นหาปลายทาง..." aria-label="ปลายทาง">
     </div>
+
+    <div class="chips" id="popular" aria-hidden="false"></div>
 
     <div class="controls-row">
       <select id="vehicle" aria-label="เลือกยานพาหนะ"></select>
@@ -379,6 +234,13 @@ function applyLanguage(){
   // set a sensible default so price calculation works immediately
   sel.value = sel.querySelector('option[value="grabCar"]') ? 'grabCar' : sel.querySelector('option:not([disabled])').value;
 
+  // popular chips
+  const pop = document.getElementById("popular"); pop.innerHTML = "";
+  i18n[currentLang].popular.forEach(p => {
+    const el = document.createElement("div"); el.className="chip"; el.textContent = p;
+    el.onclick = ()=>{ document.getElementById('search').value = p; triggerTextSearch(p); };
+    pop.appendChild(el);
+  });
 
   // ensure routes placeholder
   if(!lastRoutes || lastRoutes.length === 0){
@@ -402,108 +264,118 @@ function renderFareTable(){
   document.getElementById('fareTable').style.display = 'none';
 }
 
-/* -------------- Map & Markers -------------- */
+/* -------------- Map & Places -------------- */
 function initMap(){
-  const phuketBounds = new google.maps.LatLngBounds(
-    {lat:7.7,lng:98.2},
-    {lat:8.1,lng:98.6}
-  );
+  const phuketBounds = new google.maps.LatLngBounds({lat:7.7,lng:98.2},{lat:8.1,lng:98.6});
   const center = {lat:7.8804,lng:98.3923};
-  map = new google.maps.Map(document.getElementById('map'), {
-    center, zoom:11,
-    mapTypeControl:false,
-    streetViewControl:false
-  });
-  
+  map = new google.maps.Map(document.getElementById('map'), {center, zoom:11, mapTypeControl:false, streetViewControl:false});
   directionsService = new google.maps.DirectionsService();
-  trafficLayer = new google.maps.TrafficLayer(); 
-  trafficLayer.setMap(map);
-
+  trafficLayer = new google.maps.TrafficLayer(); trafficLayer.setMap(map);
   placesService = new google.maps.places.PlacesService(map);
 
-  // Marker variables
-  let defaultIcon = null; // ใช้ default ของ Google Maps
-
-  // ฟังก์ชันสร้าง marker อย่างปลอดภัย
-  function createMarker(latlng, title){
-    if(!latlng) return null;
-    return new google.maps.Marker({
-      position: new google.maps.LatLng(latlng.lat, latlng.lng),
-      map: map,
-      title: title || '',
-      icon: defaultIcon
-    });
-  }
-
-  // Autocomplete start
+  // Autocomplete for start
   const acStart = new google.maps.places.Autocomplete(document.getElementById('searchStart'), {
-    bounds: phuketBounds, 
-    componentRestrictions:{country:'th'}, 
-    fields:['place_id','geometry','name','formatted_address']
+    bounds: phuketBounds, componentRestrictions:{country:'th'}, fields:['place_id','geometry','name','formatted_address']
   });
-
   acStart.addListener('place_changed', () => {
     const place = acStart.getPlace();
     if(place?.geometry?.location){
       const loc = place.geometry.location;
       if(!phuketBounds.contains(loc)){ alert(i18n[currentLang].onlyPhuket); return; }
-      if(!markerA) markerA = createMarker({lat:loc.lat(), lng:loc.lng()}, 'ต้นทาง');
-      else markerA.setPosition(loc);
+      if(!markerA) markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});
+      markerA.setPosition(loc); markerA.setMap(map);
       map.panTo(loc);
-      currentPos = {lat: loc.lat(), lng: loc.lng()};
+      currentPos = {lat:loc.lat(), lng:loc.lng()};
       if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
     }
   });
 
-  // Autocomplete end
+  // Autocomplete for end
   const acEnd = new google.maps.places.Autocomplete(document.getElementById('search'), {
-    bounds: phuketBounds, 
-    componentRestrictions:{country:'th'}, 
-    fields:['place_id','geometry','name','formatted_address']
+    bounds: phuketBounds, componentRestrictions:{country:'th'}, fields:['place_id','geometry','name','formatted_address']
   });
-
   acEnd.addListener('place_changed', () => {
     const place = acEnd.getPlace();
     if(place?.geometry?.location){
       const loc = place.geometry.location;
       if(!phuketBounds.contains(loc)){ alert(i18n[currentLang].onlyPhuket); return; }
-      if(!markerB) markerB = createMarker({lat:loc.lat(), lng:loc.lng()}, 'ปลายทาง');
-      else markerB.setPosition(loc);
+      if(!markerB) markerB = new google.maps.Marker({map, icon:'http://maps.google.com/mapfiles/ms/icons/red-dot.png'});
+      markerB.setPosition(loc); markerB.setMap(map);
       map.panTo(loc);
-      if(currentPos) computeRoutes(currentPos, {lat: loc.lat(), lng: loc.lng()});
+      if(currentPos) computeRoutes(currentPos, loc);
     } else {
+      // fallback to text search
       triggerTextSearch(document.getElementById('search').value);
     }
   });
 
-  // Current location button
-  document.getElementById('btn-current').addEventListener('click', ()=>{
-    if(!navigator.geolocation){ alert('Geolocation not supported'); return; }
-    navigator.geolocation.getCurrentPosition(p=>{
-      currentPos = {lat:p.coords.latitude, lng:p.coords.longitude};
-      const pos = new google.maps.LatLng(currentPos.lat, currentPos.lng);
-      if(!phuketBounds.contains(pos)){ alert(i18n[currentLang].outsidePhuket); return; }
-      if(!markerA) markerA = createMarker(currentPos, 'ตำแหน่งคุณ');
-      else markerA.setPosition(pos);
-      map.panTo(pos);
-      if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
-    }, ()=>{ alert('Unable to retrieve your location'); });
-  });
-
-  // Try initial geolocation
+  // try initial geolocation (non-blocking)
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(p=>{
       currentPos = {lat:p.coords.latitude, lng:p.coords.longitude};
       const posLatLng = new google.maps.LatLng(currentPos.lat, currentPos.lng);
       if(!phuketBounds.contains(posLatLng)) return;
-      if(!markerA) markerA = createMarker(currentPos, 'ตำแหน่งคุณ');
+      if(!markerA) markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});
+      markerA.setPosition(posLatLng); markerA.setMap(map); markerA.setTitle('You');
       map.setCenter(posLatLng);
-    });
+    },()=>{ /* ignore */ });
   }
+
+  // wire UI buttons
+  document.getElementById('btn-current').addEventListener('click', ()=> {
+    if(!navigator.geolocation){ alert('Geolocation not supported'); return; }
+    navigator.geolocation.getCurrentPosition(p=>{
+      currentPos = {lat:p.coords.latitude, lng:p.coords.longitude};
+      const pos = new google.maps.LatLng(currentPos.lat, currentPos.lng);
+      if(!phuketBounds.contains(pos)){ alert(i18n[currentLang].outsidePhuket); return; }
+      if(!markerA) markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});
+      markerA.setPosition(pos); markerA.setMap(map); map.panTo(pos);
+      if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
+    }, ()=>{ alert('Unable to retrieve your location'); });
+  });
+
+  document.getElementById('btn-calc').addEventListener('click', ()=>{
+    // If we already have routes, just update fares; else compute if both markers present
+    const selVehicle = document.getElementById('vehicle').value;
+    if(lastRoutes && lastRoutes.length>0){
+      updateRouteFareLabels(); // refresh prices in cards
+      // Also update fare shown for selected route
+      const pill = document.querySelector('.route-card.selected .fare-pill');
+      if(pill){
+        const idx = selectedRouteIndex;
+        const fare = calculateFare(lastRoutes[idx], selVehicle || 'grabCar');
+        pill.textContent = `${fare} ฿`;
+      }
+      return;
+    }
+    if(currentPos && markerB && markerB.getPosition()){
+      computeRoutes(currentPos, markerB.getPosition());
+    } else {
+      alert('กรุณาเลือกต้นทางและปลายทางก่อน (หรือใช้ปุ่ม 📍)');
+    }
+  });
+
+  document.getElementById('btn-reset').addEventListener('click', ()=>{
+    document.getElementById('search').value=''; document.getElementById('searchStart').value='';
+    lastRoutes = []; selectedRouteIndex = 0;
+    document.getElementById('routesList').innerHTML = i18n[currentLang].noRoute;
+    polyLines.forEach(p=>p.setMap(null)); polyLines = [];
+    poiMarkers.forEach(m=>m.setMap(null)); poiMarkers = [];
+    if(markerA){ markerA.setMap(null); markerA=null; }
+    if(markerB){ markerB.setMap(null); markerB=null; }
+  });
+
+  document.getElementById('btn-toggle-fare').addEventListener('click', ()=>{
+    const f = document.getElementById('fareTable');
+    const visible = f.style.display !== 'none';
+    f.style.display = visible ? 'none' : 'block';
+    f.setAttribute('aria-hidden', visible ? 'true' : 'false');
+  });
+
+  document.getElementById('vehicle').addEventListener('change', updateRouteFareLabels);
 
   applyLanguage();
 }
-
 
 /* -------------- Places text fallback -------------- */
 function triggerTextSearch(txt){
@@ -512,9 +384,8 @@ function triggerTextSearch(txt){
   service.textSearch({query:txt, bounds: map.getBounds(), region:'th'}, (results,status)=>{
     if(status==='OK' && results[0]){
       const loc = results[0].geometry.location;
-     if(!markerB) markerB = new google.maps.Marker({ map: map });
-      markerB.setPosition(pos);  
-      markerB.setMap(map);
+      if(!markerB) markerB = new google.maps.Marker({map, icon:'http://maps.google.com/mapfiles/ms/icons/red-dot.png'});
+      markerB.setPosition(loc); markerB.setMap(map);
       map.panTo(loc);
       if(currentPos) computeRoutes(currentPos, loc);
     } else {
