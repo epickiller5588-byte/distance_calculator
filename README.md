@@ -8,6 +8,7 @@
 :root{
   --accent:#1e88e5; --muted:#6b7280; --card:#ffffff; --bg:#f6f8fb; --rounded:12px;
 }
+h1, h2, h3 { display: none; }
 body, html{margin:0; padding:0; font-family:Inter,system-ui,-apple-system,"Sarabun",sans-serif; background:var(--bg); color:#112; height:100%;}
 .wrap{display:flex; flex-direction:column; height:100vh;}
 .map-wrap{flex:0 0 60%; position:relative; border-radius:var(--rounded); overflow:hidden;}
