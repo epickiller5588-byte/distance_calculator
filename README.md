@@ -169,6 +169,6 @@ function highlightSelected(){document.querySelectorAll('.route-card').forEach((c
 
 window.initMap=initMap;
 </script>
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcAtU6iQwn7aUsNwCHST73U2pqKbImiJM&libraries=places&callback=initMap" async defer></script>
 </body>
 </html>
