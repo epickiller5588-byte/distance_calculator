@@ -259,6 +259,8 @@ function renderFareTable(){
 function initMap(){
   const phuketBounds = new google.maps.LatLngBounds({lat:7.7,lng:98.2},{lat:8.1,lng:98.6});
   const center = {lat:7.8804,lng:98.3923};
+  let markerA = null;
+let markerB = null;
   map = new google.maps.Map(document.getElementById('map'), {center, zoom:11, mapTypeControl:false, streetViewControl:false});
   directionsService = new google.maps.DirectionsService();
   trafficLayer = new google.maps.TrafficLayer(); 
