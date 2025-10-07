@@ -265,7 +265,7 @@ function initMap(){
   trafficLayer.setMap(map);
   placesService = new google.maps.places.PlacesService(map);
 
-  // Helper: สร้าง marker แบบวงกลม
+  // Helper: สร้าง marker แบบวงกลม vector (ไม่ต้องโหลดไฟล์)
   function createMarker(position, color, title) {
     return new google.maps.Marker({
       position,
@@ -273,11 +273,11 @@ function initMap(){
       title,
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
-        scale: 8,
-        fillColor: color,
-        fillOpacity: 1,
-        strokeWeight: 1,
-        strokeColor: '#ffffff'
+        scale: 10,           // ขนาดวงกลม
+        fillColor: color,    // สีเต็ม
+        fillOpacity: 0.9,    // ความทึบ
+        strokeWeight: 2,     // เส้นขอบ
+        strokeColor: '#ffffff' // สีขอบขาว
       }
     });
   }
@@ -397,7 +397,6 @@ function initMap(){
 
   applyLanguage();
 }
-
 
 /* -------------- Places text fallback -------------- */
 function triggerTextSearch(txt){
