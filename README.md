@@ -127,25 +127,28 @@ function initMap(){
     const place=acStart.getPlace();
     if(place?.geometry?.location){
       const loc=place.geometry.location;
-      if(!markerA) markerA=new google.maps.Marker({map, title:"Origin"}); // พื้นฐาน
-      markerA.setPosition(loc);
-      map.panTo(loc);
-      currentPos={lat:loc.lat(), lng:loc.lng()};
-      if(markerB) computeRoutes(currentPos, markerB.getPosition());
-    }
+    if(!markerA){
+  markerA = new google.maps.Marker({
+    map,
+    position: currentPos,
+    icon: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png',
+    title: "Origin"
   });
+}
 
   const acEnd=new google.maps.places.Autocomplete(document.getElementById('search'),{componentRestrictions:{country:'th'}});
   acEnd.addListener('place_changed',()=>{
     const place=acEnd.getPlace();
     if(place?.geometry?.location){
       const loc=place.geometry.location;
-      if(!markerB) markerB=new google.maps.Marker({map, title:"Destination"}); // พื้นฐาน
-      markerB.setPosition(loc);
-      map.panTo(loc);
-      if(currentPos) computeRoutes(currentPos, loc);
-    }
+     if(!markerB){
+  markerB = new google.maps.Marker({
+    map,
+    position: destination,
+    icon: 'https://maps.gstatic.com/mapfiles/ms2/micons/red-dot.png',
+    title: "Destination"
   });
+}
 
   // Current location
   if(navigator.geolocation){
