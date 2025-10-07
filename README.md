@@ -130,7 +130,20 @@ function initMap(){
 
   if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{currentPos={lat:p.coords.latitude,lng:p.coords.longitude}; const pos=new google.maps.LatLng(currentPos.lat,currentPos.lng); if(!markerA) markerA=new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}}); markerA.setPosition(pos); map.setCenter(pos);});}
 
-  document.getElementById('btn-current').addEventListener('click',()=>{if(!navigator.geolocation){alert('Geolocation not supported'); return;} navigator.geolocation.getCurrentPosition(p=>{currentPos={lat:p.coords.latitude,lng:p.coords.longitude}; const pos=new google.maps.LatLng(currentPos.lat,currentPos.lng); if(!markerA) markerA=new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}}); markerA.setPosition(pos); map.panTo(pos); if(markerB) computeRoutes(currentPos, markerB.getPosition());},()=>{alert('Unable to retrieve your location');});});
+  document.getElementById('btn-current').addEventListener('click',()=>{if(!navigator.geolocation){alert('Geolocation not supported'); return;} navigator.geolocation.getCurrentPosition(p=>{currentPos={lat:p.coords.latitude,lng:p.coords.longitude}; 
+  const pos=new google.maps.LatLng(currentPos.lat,currentPos.lng); 
+if(!markerA)
+  markerA=new google.maps.Marker({
+    map,
+    icon:'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png', // ✅ ใช้ HTTPS
+    title:"Origin"
+  });
+if(!markerB)
+  markerB=new google.maps.Marker({
+    map,
+    icon:'https://maps.gstatic.com/mapfiles/ms2/micons/red-dot.png', // ✅ ใช้ HTTPS
+    title:"Destination"
+  });
   document.getElementById('btn-calc').addEventListener('click',()=>{if(currentPos&&markerB) computeRoutes(currentPos,markerB.getPosition()); else alert('เลือกต้นทางและปลายทางก่อน');});
   document.getElementById('btn-reset').addEventListener('click',()=>{document.getElementById('search').value=''; document.getElementById('searchStart').value=''; lastRoutes=[]; selectedRouteIndex=0; document.getElementById('routesList').innerHTML=i18n[currentLang].noRoute; polyLines.forEach(p=>p.setMap(null)); polyLines=[]; if(markerA){markerA.setMap(null);markerA=null;} if(markerB){markerB.setMap(null);markerB=null;}});
   document.getElementById('btn-toggle-fare').addEventListener('click',()=>{const f=document.getElementById('fareTable'); f.style.display=(f.style.display==='none')?'block':'none';});
