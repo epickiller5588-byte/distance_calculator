@@ -123,31 +123,78 @@ function initMap(){
   directionsService=new google.maps.DirectionsService();
 
   const acStart=new google.maps.places.Autocomplete(document.getElementById('searchStart'),{componentRestrictions:{country:'th'}});
-  acStart.addListener('place_changed',()=>{const place=acStart.getPlace(); if(place?.geometry?.location){const loc=place.geometry.location; if(!markerA) markerA=new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}}); markerA.setPosition(loc); map.panTo(loc); currentPos={lat:loc.lat(), lng:loc.lng()}; if(markerB) computeRoutes(currentPos, markerB.getPosition());}});
+  acStart.addListener('place_changed',()=>{
+    const place=acStart.getPlace();
+    if(place?.geometry?.location){
+      const loc=place.geometry.location;
+      if(!markerA) markerA=new google.maps.Marker({map, title:"Origin"}); // พื้นฐาน
+      markerA.setPosition(loc);
+      map.panTo(loc);
+      currentPos={lat:loc.lat(), lng:loc.lng()};
+      if(markerB) computeRoutes(currentPos, markerB.getPosition());
+    }
+  });
 
   const acEnd=new google.maps.places.Autocomplete(document.getElementById('search'),{componentRestrictions:{country:'th'}});
-  acEnd.addListener('place_changed',()=>{const place=acEnd.getPlace(); if(place?.geometry?.location){const loc=place.geometry.location; if(!markerB) markerB=new google.maps.Marker({map, icon:'http://maps.google.com/mapfiles/ms/icons/red-dot.png'}); markerB.setPosition(loc); map.panTo(loc); if(currentPos) computeRoutes(currentPos, loc);}});
-
-  if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{currentPos={lat:p.coords.latitude,lng:p.coords.longitude}; const pos=new google.maps.LatLng(currentPos.lat,currentPos.lng); if(!markerA) markerA=new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}}); markerA.setPosition(pos); map.setCenter(pos);});}
-
-  document.getElementById('btn-current').addEventListener('click',()=>{if(!navigator.geolocation){alert('Geolocation not supported'); return;} navigator.geolocation.getCurrentPosition(p=>{currentPos={lat:p.coords.latitude,lng:p.coords.longitude}; 
-  const pos=new google.maps.LatLng(currentPos.lat,currentPos.lng); 
-if(!markerA)
-  markerA=new google.maps.Marker({
-    map,
-    icon:'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png', // ✅ ใช้ HTTPS
-    title:"Origin"
+  acEnd.addListener('place_changed',()=>{
+    const place=acEnd.getPlace();
+    if(place?.geometry?.location){
+      const loc=place.geometry.location;
+      if(!markerB) markerB=new google.maps.Marker({map, title:"Destination"}); // พื้นฐาน
+      markerB.setPosition(loc);
+      map.panTo(loc);
+      if(currentPos) computeRoutes(currentPos, loc);
+    }
   });
-if(!markerB)
-  markerB=new google.maps.Marker({
-    map,
-    icon:'https://maps.gstatic.com/mapfiles/ms2/micons/red-dot.png', // ✅ ใช้ HTTPS
-    title:"Destination"
+
+  // Current location
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(p=>{
+      currentPos={lat:p.coords.latitude,lng:p.coords.longitude};
+      const pos=new google.maps.LatLng(currentPos.lat,currentPos.lng);
+      if(!markerA) markerA=new google.maps.Marker({map, title:"Origin"});
+      markerA.setPosition(pos);
+      map.setCenter(pos);
+    });
+  }
+
+  document.getElementById('btn-current').addEventListener('click',()=>{
+    if(!navigator.geolocation){alert('Geolocation not supported'); return;}
+    navigator.geolocation.getCurrentPosition(p=>{
+      currentPos={lat:p.coords.latitude,lng:p.coords.longitude};
+      const pos=new google.maps.LatLng(currentPos.lat,currentPos.lng);
+      if(!markerA) markerA=new google.maps.Marker({map, title:"Origin"});
+      markerA.setPosition(pos);
+      map.panTo(pos);
+      if(markerB) computeRoutes(currentPos, markerB.getPosition());
+    },()=>{alert('Unable to retrieve your location');});
   });
-  document.getElementById('btn-calc').addEventListener('click',()=>{if(currentPos&&markerB) computeRoutes(currentPos,markerB.getPosition()); else alert('เลือกต้นทางและปลายทางก่อน');});
-  document.getElementById('btn-reset').addEventListener('click',()=>{document.getElementById('search').value=''; document.getElementById('searchStart').value=''; lastRoutes=[]; selectedRouteIndex=0; document.getElementById('routesList').innerHTML=i18n[currentLang].noRoute; polyLines.forEach(p=>p.setMap(null)); polyLines=[]; if(markerA){markerA.setMap(null);markerA=null;} if(markerB){markerB.setMap(null);markerB=null;}});
-  document.getElementById('btn-toggle-fare').addEventListener('click',()=>{const f=document.getElementById('fareTable'); f.style.display=(f.style.display==='none')?'block':'none';});
-  document.getElementById('btn-lang').addEventListener('click',()=>{currentLang=(currentLang==='th'?'en':'th'); applyLanguage();});
+
+  document.getElementById('btn-calc').addEventListener('click',()=>{
+    if(currentPos&&markerB) computeRoutes(currentPos, markerB.getPosition());
+    else alert('เลือกต้นทางและปลายทางก่อน');
+  });
+
+  document.getElementById('btn-reset').addEventListener('click',()=>{
+    document.getElementById('search').value='';
+    document.getElementById('searchStart').value='';
+    lastRoutes=[]; selectedRouteIndex=0;
+    document.getElementById('routesList').innerHTML=i18n[currentLang].noRoute;
+    polyLines.forEach(p=>p.setMap(null)); polyLines=[];
+    if(markerA){markerA.setMap(null);markerA=null;}
+    if(markerB){markerB.setMap(null);markerB=null;}
+  });
+
+  document.getElementById('btn-toggle-fare').addEventListener('click',()=>{
+    const f=document.getElementById('fareTable'); 
+    f.style.display=(f.style.display==='none')?'block':'none';
+  });
+
+  document.getElementById('btn-lang').addEventListener('click',()=>{
+    currentLang=(currentLang==='th'?'en':'th'); 
+    applyLanguage();
+  });
+
   applyLanguage();
 }
 
