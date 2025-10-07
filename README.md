@@ -257,30 +257,33 @@ function renderFareTable(){
 }
 ///map////
 function initMap(){
-  const phuketBounds = new google.maps.LatLngBounds({lat:7.7,lng:98.2},{lat:8.1,lng:98.6});
+  const phuketBounds = new google.maps.LatLngBounds(
+    {lat:7.7,lng:98.2}, {lat:8.1,lng:98.6}
+  );
   const center = {lat:7.8804,lng:98.3923};
+
   map = new google.maps.Map(document.getElementById('map'), {
     center, zoom:11, mapTypeControl:false, streetViewControl:false
   });
+
   directionsService = new google.maps.DirectionsService();
   trafficLayer = new google.maps.TrafficLayer(); 
   trafficLayer.setMap(map);
   placesService = new google.maps.places.PlacesService(map);
 
-  // Helper: สร้าง marker แบบวงกลม vector (ไม่ต้องโหลดไฟล์)
+  // Helper: สร้าง SVG marker แบบวงกลม
   function createMarker(position, color, title) {
     return new google.maps.Marker({
       position: position,
       map: map,
       title: title,
       icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 10,
-        fillColor: color,
-        fillOpacity: 1,
-        strokeColor: '#ffffff',
-        strokeOpacity: 1,
-        strokeWeight: 2
+        url: `data:image/svg+xml;utf-8,
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <circle cx="12" cy="12" r="10" fill="${color}" stroke="white" stroke-width="2"/>
+          </svg>`,
+        scaledSize: new google.maps.Size(24, 24),
+        anchor: new google.maps.Point(12, 12)
       }
     });
   }
@@ -291,6 +294,7 @@ function initMap(){
     componentRestrictions:{country:'th'},
     fields:['place_id','geometry','name','formatted_address']
   });
+
   acStart.addListener('place_changed', () => {
     const place = acStart.getPlace();
     if(place?.geometry?.location){
@@ -312,6 +316,7 @@ function initMap(){
     componentRestrictions:{country:'th'},
     fields:['place_id','geometry','name','formatted_address']
   });
+
   acEnd.addListener('place_changed', () => {
     const place = acEnd.getPlace();
     if(place?.geometry?.location){
@@ -390,6 +395,7 @@ function initMap(){
     if(markerB){ markerB.setMap(null); markerB=null; }
   });
 
+  // btn-toggle-fare
   document.getElementById('btn-toggle-fare').addEventListener('click', ()=>{
     const f = document.getElementById('fareTable');
     const visible = f.style.display !== 'none';
