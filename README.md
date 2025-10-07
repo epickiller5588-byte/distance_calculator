@@ -255,134 +255,120 @@ function renderFareTable(){
   // leave displayed state controlled by toggle (initially hidden to reduce clutter on mobile)
   document.getElementById('fareTable').style.display = 'none';
 }
-function initMap() {
-  // ขอบเขตภูเก็ต
-  const phuketBounds = new google.maps.LatLngBounds(
-    { lat: 7.7, lng: 98.2 },
-    { lat: 8.1, lng: 98.6 }
-  );
 
-  // center map
-  const center = { lat: 7.8804, lng: 98.3923 };
-  map = new google.maps.Map(document.getElementById('map'), {
-    center,
-    zoom: 11,
-    mapTypeControl: false,
-    streetViewControl: false
-  });
-
+/* -------------- Map & Places -------------- */
+function initMap(){
+  const phuketBounds = new google.maps.LatLngBounds({lat:7.7,lng:98.2},{lat:8.1,lng:98.6});
+  const center = {lat:7.8804,lng:98.3923};
+  map = new google.maps.Map(document.getElementById('map'), {center, zoom:11, mapTypeControl:false, streetViewControl:false});
   directionsService = new google.maps.DirectionsService();
-  directionsRenderer = new google.maps.DirectionsRenderer({ map: map });
-  trafficLayer = new google.maps.TrafficLayer();
-  trafficLayer.setMap(map);
+  trafficLayer = new google.maps.TrafficLayer(); trafficLayer.setMap(map);
   placesService = new google.maps.places.PlacesService(map);
 
-  let markerA = null;
-  let markerB = null;
-  let currentPos = null;
-
-  // Helper: สร้าง marker แบบ SVG
-  function createMarker(position, color, title) {
-    console.log("Creating marker:", title, position.toString ? position.toString() : position);
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
-        <circle cx="12" cy="12" r="10" fill="${color}" stroke="white" stroke-width="2"/>
-      </svg>`;
-    return new google.maps.Marker({
-      position: position,
-      map: map,
-      title: title,
-      icon: {
-        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
-        scaledSize: new google.maps.Size(24, 24),
-        anchor: new google.maps.Point(12, 12)
-      }
-    });
-  }
-
-  // ฟังก์ชันคำนวณ route debug
-  function computeRoutes(origin, destination) {
-    console.log("Computing route from", origin, "to", destination);
-    directionsService.route({
-      origin: origin,
-      destination: destination,
-      travelMode: google.maps.TravelMode.DRIVING
-    }, (response, status) => {
-      if (status === google.maps.DirectionsStatus.OK) {
-        console.log("Route found!");
-        directionsRenderer.setDirections(response);
-      } else {
-        console.error("Directions request failed:", status);
-      }
-    });
-  }
-
-  // Autocomplete ต้นทาง
+  // Autocomplete for start
   const acStart = new google.maps.places.Autocomplete(document.getElementById('searchStart'), {
-    bounds: phuketBounds,
-    componentRestrictions: { country: 'th' },
-    fields: ['place_id', 'geometry', 'name', 'formatted_address']
+    bounds: phuketBounds, componentRestrictions:{country:'th'}, fields:['place_id','geometry','name','formatted_address']
   });
   acStart.addListener('place_changed', () => {
     const place = acStart.getPlace();
-    if (place?.geometry?.location) {
+    if(place?.geometry?.location){
       const loc = place.geometry.location;
-      if (!phuketBounds.contains(loc)) { alert("เฉพาะภูเก็ตเท่านั้น"); return; }
-      if (!markerA) markerA = createMarker(loc, '#007bff', "ต้นทาง");
-      else markerA.setPosition(loc);
+      if(!phuketBounds.contains(loc)){ alert(i18n[currentLang].onlyPhuket); return; }
+      if(!markerA) markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});
+      markerA.setPosition(loc); markerA.setMap(map);
       map.panTo(loc);
-      currentPos = { lat: loc.lat(), lng: loc.lng() };
-      console.log("CurrentPos set:", currentPos);
-      if (markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
+      currentPos = {lat:loc.lat(), lng:loc.lng()};
+      if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
     }
   });
 
-  // Autocomplete ปลายทาง
+  // Autocomplete for end
   const acEnd = new google.maps.places.Autocomplete(document.getElementById('search'), {
-    bounds: phuketBounds,
-    componentRestrictions: { country: 'th' },
-    fields: ['place_id', 'geometry', 'name', 'formatted_address']
+    bounds: phuketBounds, componentRestrictions:{country:'th'}, fields:['place_id','geometry','name','formatted_address']
   });
   acEnd.addListener('place_changed', () => {
     const place = acEnd.getPlace();
-    if (place?.geometry?.location) {
+    if(place?.geometry?.location){
       const loc = place.geometry.location;
-      if (!phuketBounds.contains(loc)) { alert("เฉพาะภูเก็ตเท่านั้น"); return; }
-      if (!markerB) markerB = createMarker(loc, '#ff0000', "ปลายทาง");
-      else markerB.setPosition(loc);
+      if(!phuketBounds.contains(loc)){ alert(i18n[currentLang].onlyPhuket); return; }
+      if(!markerB) markerB = new google.maps.Marker({map, icon:'http://maps.google.com/mapfiles/ms/icons/red-dot.png'});
+      markerB.setPosition(loc); markerB.setMap(map);
       map.panTo(loc);
-      console.log("MarkerB set:", loc.toString());
-      if (currentPos) computeRoutes(currentPos, loc);
+      if(currentPos) computeRoutes(currentPos, loc);
+    } else {
+      // fallback to text search
+      triggerTextSearch(document.getElementById('search').value);
     }
   });
 
-  // Initial geolocation
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(p => {
-      currentPos = { lat: p.coords.latitude, lng: p.coords.longitude };
+  // try initial geolocation (non-blocking)
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(p=>{
+      currentPos = {lat:p.coords.latitude, lng:p.coords.longitude};
       const posLatLng = new google.maps.LatLng(currentPos.lat, currentPos.lng);
-      if (!phuketBounds.contains(posLatLng)) { console.warn("ตำแหน่งไม่อยู่ในภูเก็ต"); return; }
-      if (!markerA) markerA = createMarker(posLatLng, '#007bff', 'You');
-      else markerA.setPosition(posLatLng);
+      if(!phuketBounds.contains(posLatLng)) return;
+      if(!markerA) markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});
+      markerA.setPosition(posLatLng); markerA.setMap(map); markerA.setTitle('You');
       map.setCenter(posLatLng);
-      console.log("Geolocation set:", currentPos);
-    }, err => { console.error("Geolocation error:", err); });
+    },()=>{ /* ignore */ });
   }
 
-  // ปุ่มตำแหน่งปัจจุบัน
-  document.getElementById('btn-current').addEventListener('click', () => {
-    if (!navigator.geolocation) { alert('Geolocation not supported'); return; }
-    navigator.geolocation.getCurrentPosition(p => {
-      currentPos = { lat: p.coords.latitude, lng: p.coords.longitude };
+  // wire UI buttons
+  document.getElementById('btn-current').addEventListener('click', ()=> {
+    if(!navigator.geolocation){ alert('Geolocation not supported'); return; }
+    navigator.geolocation.getCurrentPosition(p=>{
+      currentPos = {lat:p.coords.latitude, lng:p.coords.longitude};
       const pos = new google.maps.LatLng(currentPos.lat, currentPos.lng);
-      if (!phuketBounds.contains(pos)) { alert("อยู่นอกภูเก็ต"); return; }
-      if (!markerA) markerA = createMarker(pos, '#007bff', "ต้นทาง");
-      else markerA.setPosition(pos);
-      map.panTo(pos);
-      if (markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
-    }, () => { alert('Unable to retrieve your location'); });
+      if(!phuketBounds.contains(pos)){ alert(i18n[currentLang].outsidePhuket); return; }
+      if(!markerA) markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});
+      markerA.setPosition(pos); markerA.setMap(map); map.panTo(pos);
+      if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
+    }, ()=>{ alert('Unable to retrieve your location'); });
   });
+
+  document.getElementById('btn-calc').addEventListener('click', ()=>{
+    // If we already have routes, just update fares; else compute if both markers present
+    const selVehicle = document.getElementById('vehicle').value;
+    if(lastRoutes && lastRoutes.length>0){
+      updateRouteFareLabels(); // refresh prices in cards
+      // Also update fare shown for selected route
+      const pill = document.querySelector('.route-card.selected .fare-pill');
+      if(pill){
+        const idx = selectedRouteIndex;
+        const fare = calculateFare(lastRoutes[idx], selVehicle || 'grabCar');
+        pill.textContent = `${fare} ฿`;
+      }
+      return;
+    }
+    if(currentPos && markerB && markerB.getPosition()){
+      computeRoutes(currentPos, markerB.getPosition());
+    } else {
+      alert('กรุณาเลือกต้นทางและปลายทางก่อน (หรือใช้ปุ่ม 📍)');
+    }
+  });
+
+  document.getElementById('btn-reset').addEventListener('click', ()=>{
+    document.getElementById('search').value=''; document.getElementById('searchStart').value='';
+    lastRoutes = []; selectedRouteIndex = 0;
+    document.getElementById('routesList').innerHTML = i18n[currentLang].noRoute;
+    polyLines.forEach(p=>p.setMap(null)); polyLines = [];
+    poiMarkers.forEach(m=>m.setMap(null)); poiMarkers = [];
+    if(markerA){ markerA.setMap(null); markerA=null; }
+    if(markerB){ markerB.setMap(null); markerB=null; }
+  });
+
+  document.getElementById('btn-toggle-fare').addEventListener('click', ()=>{
+    const f = document.getElementById('fareTable');
+    const visible = f.style.display !== 'none';
+    f.style.display = visible ? 'none' : 'block';
+    f.setAttribute('aria-hidden', visible ? 'true' : 'false');
+  });
+
+  document.getElementById('vehicle').addEventListener('change', updateRouteFareLabels);
+
+  applyLanguage();
 }
+
 /* -------------- Places text fallback -------------- */
 function triggerTextSearch(txt){
   if(!txt) return;
