@@ -274,8 +274,19 @@ function initMap(){
     if(place?.geometry?.location){
       const loc = place.geometry.location;
       if(!phuketBounds.contains(loc)){ alert(i18n[currentLang].onlyPhuket); return; }
-      if(!markerA) markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});
-      markerA.setPosition(loc); markerA.setMap(map);
+   if(!markerA) markerA = new google.maps.Marker({
+  map,
+  icon:{
+    path: google.maps.SymbolPath.CIRCLE,
+    scale: 10,             // เพิ่มขนาดให้เห็นชัด
+    fillColor: '#1e88e5',  // สีฟ้า
+    fillOpacity: 1,
+    strokeColor: '#ffffff', // ขอบสีขาว
+    strokeWeight: 2
+  },
+  title: "ต้นทาง"
+});
+
       map.panTo(loc);
       currentPos = {lat:loc.lat(), lng:loc.lng()};
       if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
@@ -291,8 +302,12 @@ function initMap(){
     if(place?.geometry?.location){
       const loc = place.geometry.location;
       if(!phuketBounds.contains(loc)){ alert(i18n[currentLang].onlyPhuket); return; }
-      if(!markerB) markerB = new google.maps.Marker({map, icon:'http://maps.google.com/mapfiles/ms/icons/red-dot.png'});
-      markerB.setPosition(loc); markerB.setMap(map);
+    if(!markerB) markerB = new google.maps.Marker({
+  map,
+  icon: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png', // เปลี่ยนเป็น HTTPS
+  title: "ปลายทาง"
+});
+
       map.panTo(loc);
       if(currentPos) computeRoutes(currentPos, loc);
     } else {
@@ -314,17 +329,30 @@ function initMap(){
   }
 
   // wire UI buttons
-  document.getElementById('btn-current').addEventListener('click', ()=> {
+ document.getElementById('btn-current').addEventListener('click', ()=>{
     if(!navigator.geolocation){ alert('Geolocation not supported'); return; }
     navigator.geolocation.getCurrentPosition(p=>{
-      currentPos = {lat:p.coords.latitude, lng:p.coords.longitude};
-      const pos = new google.maps.LatLng(currentPos.lat, currentPos.lng);
-      if(!phuketBounds.contains(pos)){ alert(i18n[currentLang].outsidePhuket); return; }
-      if(!markerA) markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});
-      markerA.setPosition(pos); markerA.setMap(map); map.panTo(pos);
-      if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
+        currentPos = {lat:p.coords.latitude, lng:p.coords.longitude};
+        const pos = new google.maps.LatLng(currentPos.lat, currentPos.lng);
+        if(!phuketBounds.contains(pos)){ alert(i18n[currentLang].outsidePhuket); return; }
+        if(!markerA) markerA = new google.maps.Marker({
+            map,
+            icon:{
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 10,             // ขนาดใหญ่ขึ้น
+                fillColor: '#1e88e5',  // สีฟ้า
+                fillOpacity: 1,
+                strokeColor: '#ffffff', // ขอบสีขาว
+                strokeWeight: 2
+            },
+            title: "ต้นทาง"
+        });
+        markerA.setPosition(pos); 
+        markerA.setMap(map); 
+        map.panTo(pos);
+        if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
     }, ()=>{ alert('Unable to retrieve your location'); });
-  });
+});
 
   document.getElementById('btn-calc').addEventListener('click', ()=>{
     // If we already have routes, just update fares; else compute if both markers present
