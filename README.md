@@ -259,9 +259,9 @@ function renderFareTable(){
 function initMap(){
   const phuketBounds = new google.maps.LatLngBounds({lat:7.7,lng:98.2},{lat:8.1,lng:98.6});
   const center = {lat:7.8804,lng:98.3923};
-  let markerA = null;
-let markerB = null;
-  map = new google.maps.Map(document.getElementById('map'), {center, zoom:11, mapTypeControl:false, streetViewControl:false});
+  map = new google.maps.Map(document.getElementById('map'), {
+    center, zoom:11, mapTypeControl:false, streetViewControl:false
+  });
   directionsService = new google.maps.DirectionsService();
   trafficLayer = new google.maps.TrafficLayer(); 
   trafficLayer.setMap(map);
@@ -270,16 +270,17 @@ let markerB = null;
   // Helper: สร้าง marker แบบวงกลม vector (ไม่ต้องโหลดไฟล์)
   function createMarker(position, color, title) {
     return new google.maps.Marker({
-      position,
-      map,
-      title,
+      position: position,
+      map: map,
+      title: title,
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
-        scale: 10,           // ขนาดวงกลม
-        fillColor: color,    // สีเต็ม
-        fillOpacity: 0.9,    // ความทึบ
-        strokeWeight: 2,     // เส้นขอบ
-        strokeColor: '#ffffff' // สีขอบขาว
+        scale: 10,
+        fillColor: color,
+        fillOpacity: 1,
+        strokeColor: '#ffffff',
+        strokeOpacity: 1,
+        strokeWeight: 2
       }
     });
   }
@@ -379,7 +380,8 @@ let markerB = null;
 
   // btn-reset
   document.getElementById('btn-reset').addEventListener('click', ()=>{
-    document.getElementById('search').value=''; document.getElementById('searchStart').value='';
+    document.getElementById('search').value=''; 
+    document.getElementById('searchStart').value='';
     lastRoutes = []; selectedRouteIndex = 0;
     document.getElementById('routesList').innerHTML = i18n[currentLang].noRoute;
     polyLines.forEach(p=>p.setMap(null)); polyLines = [];
