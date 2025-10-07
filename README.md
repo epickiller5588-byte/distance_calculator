@@ -1,4 +1,3 @@
-
 <html lang="th">
 <head>
 <meta charset="utf-8">
@@ -8,14 +7,14 @@
 :root{
   --accent:#1e88e5; --muted:#6b7280; --card:#ffffff; --bg:#f6f8fb; --rounded:12px;
 }
-h1, h2, h3 { display: none; }
-body, html{margin:0; padding:0; font-family:Inter,system-ui,-apple-system,"Sarabun",sans-serif; background:var(--bg); color:#112; height:100%;}
+h1,h2,h3{display:none;}
+body,html{margin:0; padding:0; font-family:Inter,system-ui,-apple-system,"Sarabun",sans-serif; background:var(--bg); color:#112; height:100%;}
 .wrap{display:flex; flex-direction:column; height:100vh;}
 .map-wrap{flex:0 0 60%; position:relative; border-radius:var(--rounded); overflow:hidden;}
 #map{width:100%; height:100%;}
 .controls{flex:1; display:flex; flex-direction:column; gap:8px; padding:8px;}
 .row{display:flex; gap:6px; flex-wrap:wrap;}
-input, select, button{padding:8px 10px; font-size:14px; border-radius:8px; border:1px solid #e6e9ee;}
+input,select,button{padding:8px 10px; font-size:14px; border-radius:8px; border:1px solid #e6e9ee;}
 input{flex:1;}
 select{flex:1;}
 button{cursor:pointer; border:none; background:var(--accent); color:#fff;}
@@ -25,7 +24,7 @@ button.alt{background:#eef; color:var(--accent); border:1px solid #d6e6ff;}
 .route-card.selected{outline:2px solid rgba(30,136,229,.2);}
 .fare-table{position:absolute; bottom:12px; right:12px; background:var(--card); padding:10px; border-radius:10px; box-shadow:0 6px 16px rgba(0,0,0,0.12); display:none; max-width:90vw; overflow:auto;}
 .fare-table table{border-collapse:collapse; width:100%;}
-.fare-table th, .fare-table td{padding:4px; text-align:left; font-size:13px;}
+.fare-table th,.fare-table td{padding:4px; text-align:left; font-size:13px;}
 .legend{position:absolute; left:12px; bottom:12px; background:#fff; padding:6px 8px; border-radius:8px; border:1px solid #eef; display:flex; gap:6px; align-items:center; font-size:12px;}
 .dot{width:24px; height:4px; border-radius:4px;}
 .fast{background:linear-gradient(90deg,#2ecc71,#1faa4a);}
@@ -96,7 +95,7 @@ const i18n = {
 let currentLang='th';
 
 // ----- State -----
-let map, directionsService, markerA=null, markerB=null, lastRoutes=[], selectedRouteIndex=0, polyLines=[], currentPos=null;
+let map,directionsService,markerA,markerB,lastRoutes=[],selectedRouteIndex=0,polyLines=[],currentPos=null;
 
 // ----- Helpers -----
 function km(m){return (m/1000).toFixed(1);}
@@ -110,7 +109,6 @@ function applyLanguage(){
   document.getElementById('btn-calc').textContent=i18n[currentLang].calc;
   document.getElementById('btn-reset').textContent=i18n[currentLang].reset;
   document.getElementById('btn-toggle-fare').textContent=i18n[currentLang].toggleFare;
-  document.getElementById('routesList').textContent=(lastRoutes.length?i18n[currentLang].noRoute:i18n[currentLang].noRoute);
   const sel=document.getElementById('vehicle'); sel.innerHTML=''; for(const k in vehicleRates){const opt=document.createElement('option'); opt.value=k; opt.textContent=vehicleNames[currentLang][k]||k; sel.appendChild(opt);} sel.value='grabCar';
   renderFareTable();
 }
@@ -122,80 +120,68 @@ function initMap(){
   map=new google.maps.Map(document.getElementById('map'),{center, zoom:11, mapTypeControl:false, streetViewControl:false});
   directionsService=new google.maps.DirectionsService();
 
+  // Create markers
+  markerA = new google.maps.Marker({map, icon:'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png', title:"ต้นทาง"});
+  markerB = new google.maps.Marker({map, icon:'https://maps.gstatic.com/mapfiles/ms2/micons/red-dot.png', title:"ปลายทาง"});
+
+  // Autocomplete
   const acStart=new google.maps.places.Autocomplete(document.getElementById('searchStart'),{componentRestrictions:{country:'th'}});
   acStart.addListener('place_changed',()=>{
     const place=acStart.getPlace();
     if(place?.geometry?.location){
       const loc=place.geometry.location;
-    if(!markerA){
-  markerA = new google.maps.Marker({
-    map,
-    position: currentPos,
-    icon: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png',
-    title: "Origin"
+      markerA.setPosition(loc);
+      currentPos={lat:loc.lat(), lng:loc.lng()};
+      map.panTo(loc);
+      if(markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
+    }
   });
-}
-
   const acEnd=new google.maps.places.Autocomplete(document.getElementById('search'),{componentRestrictions:{country:'th'}});
   acEnd.addListener('place_changed',()=>{
     const place=acEnd.getPlace();
     if(place?.geometry?.location){
       const loc=place.geometry.location;
-     if(!markerB){
-  markerB = new google.maps.Marker({
-    map,
-    position: destination,
-    icon: 'https://maps.gstatic.com/mapfiles/ms2/micons/red-dot.png',
-    title: "Destination"
+      markerB.setPosition(loc);
+      if(currentPos) computeRoutes(currentPos, markerB.getPosition());
+      map.panTo(loc);
+    }
   });
-}
 
   // Current location
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(p=>{
       currentPos={lat:p.coords.latitude,lng:p.coords.longitude};
       const pos=new google.maps.LatLng(currentPos.lat,currentPos.lng);
-      if(!markerA) markerA=new google.maps.Marker({map, title:"Origin"});
       markerA.setPosition(pos);
       map.setCenter(pos);
     });
   }
 
+  // Buttons
   document.getElementById('btn-current').addEventListener('click',()=>{
     if(!navigator.geolocation){alert('Geolocation not supported'); return;}
     navigator.geolocation.getCurrentPosition(p=>{
       currentPos={lat:p.coords.latitude,lng:p.coords.longitude};
       const pos=new google.maps.LatLng(currentPos.lat,currentPos.lng);
-      if(!markerA) markerA=new google.maps.Marker({map, title:"Origin"});
       markerA.setPosition(pos);
       map.panTo(pos);
-      if(markerB) computeRoutes(currentPos, markerB.getPosition());
+      if(markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
     },()=>{alert('Unable to retrieve your location');});
   });
-
-  document.getElementById('btn-calc').addEventListener('click',()=>{
-    if(currentPos&&markerB) computeRoutes(currentPos, markerB.getPosition());
-    else alert('เลือกต้นทางและปลายทางก่อน');
-  });
-
+  document.getElementById('btn-calc').addEventListener('click',()=>{if(currentPos&&markerB) computeRoutes(currentPos, markerB.getPosition()); else alert('เลือกต้นทางและปลายทางก่อน');});
   document.getElementById('btn-reset').addEventListener('click',()=>{
     document.getElementById('search').value='';
     document.getElementById('searchStart').value='';
     lastRoutes=[]; selectedRouteIndex=0;
     document.getElementById('routesList').innerHTML=i18n[currentLang].noRoute;
     polyLines.forEach(p=>p.setMap(null)); polyLines=[];
-    if(markerA){markerA.setMap(null);markerA=null;}
-    if(markerB){markerB.setMap(null);markerB=null;}
+    markerA.setMap(null); markerB.setMap(null);
   });
-
   document.getElementById('btn-toggle-fare').addEventListener('click',()=>{
-    const f=document.getElementById('fareTable'); 
-    f.style.display=(f.style.display==='none')?'block':'none';
+    const f=document.getElementById('fareTable'); f.style.display=(f.style.display==='none')?'block':'none';
   });
-
   document.getElementById('btn-lang').addEventListener('click',()=>{
-    currentLang=(currentLang==='th'?'en':'th'); 
-    applyLanguage();
+    currentLang=(currentLang==='th'?'en':'th'); applyLanguage();
   });
 
   applyLanguage();
@@ -209,15 +195,15 @@ function computeRoutes(origin,dest){
     else alert('Directions request failed: '+status);
   });
 }
-
 function renderRoutes(routes,vehicleKey){
   const container=document.getElementById('routesList'); container.innerHTML='';
   if(!routes||routes.length===0){container.textContent=i18n[currentLang].noRoute; return;}
   const colors=['#2ecc71','#f1c40f','#e74c3c','#1e88e5','#9b59b6'];
   routes.forEach((r,i)=>{
     const path=r.overview_path.map(p=>({lat:p.lat(),lng:p.lng()}));
-    const poly=new google.maps.Polyline({path,pathOpacity:0.6, map, strokeColor:colors[i%colors.length], strokeWeight:6});
-    poly.routeIndex=i; polyLines.push(poly); poly.addListener('click',()=>{selectedRouteIndex=poly.routeIndex; drawPolyline(routes[selectedRouteIndex]); highlightSelected();});
+    const poly=new google.maps.Polyline({path, map, strokeColor:colors[i%colors.length], strokeWeight:6, strokeOpacity:0.6});
+    poly.routeIndex=i; polyLines.push(poly);
+    poly.addListener('click',()=>{selectedRouteIndex=poly.routeIndex; drawPolyline(routes[selectedRouteIndex]); highlightSelected();});
     const card=document.createElement('div'); card.className='route-card'; card.dataset.routeIndex=i;
     const distText=`${km(r.legs[0].distance.value)} ${i18n[currentLang].kmLabel}`;
     const durText=`${Math.round(r.legs[0].duration.value/60)} ${i18n[currentLang].minsLabel}`;
