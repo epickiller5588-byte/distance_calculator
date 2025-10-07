@@ -1,4 +1,4 @@
-<!doctype html>
+
 <html lang="th">
 <head>
 <meta charset="utf-8" />
@@ -188,6 +188,6 @@ function renderRoutes(routes){
 window.initMap=initMap;
 applyLanguage();
 </script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcAtU6iQwn7aUsNwCHST73U2pqKbImiJMY&libraries=places&callback=initMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcAtU6iQwn7aUsNwCHST73U2pqKbImiJM&libraries=places&callback=initMap" async defer></script>
 </body>
 </html>
