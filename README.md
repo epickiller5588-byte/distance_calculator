@@ -261,12 +261,32 @@ function initMap(){
   const center = {lat:7.8804,lng:98.3923};
   map = new google.maps.Map(document.getElementById('map'), {center, zoom:11, mapTypeControl:false, streetViewControl:false});
   directionsService = new google.maps.DirectionsService();
-  trafficLayer = new google.maps.TrafficLayer(); trafficLayer.setMap(map);
+  trafficLayer = new google.maps.TrafficLayer(); 
+  trafficLayer.setMap(map);
   placesService = new google.maps.places.PlacesService(map);
 
-  // Autocomplete for start
+  // Helper: สร้าง marker แบบวงกลม
+  function createMarker(position, color, title) {
+    return new google.maps.Marker({
+      position,
+      map,
+      title,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 8,
+        fillColor: color,
+        fillOpacity: 1,
+        strokeWeight: 1,
+        strokeColor: '#ffffff'
+      }
+    });
+  }
+
+  // Autocomplete ต้นทาง
   const acStart = new google.maps.places.Autocomplete(document.getElementById('searchStart'), {
-    bounds: phuketBounds, componentRestrictions:{country:'th'}, fields:['place_id','geometry','name','formatted_address']
+    bounds: phuketBounds,
+    componentRestrictions:{country:'th'},
+    fields:['place_id','geometry','name','formatted_address']
   });
   acStart.addListener('place_changed', () => {
     const place = acStart.getPlace();
@@ -274,13 +294,8 @@ function initMap(){
       const loc = place.geometry.location;
       if(!phuketBounds.contains(loc)){ alert(i18n[currentLang].onlyPhuket); return; }
 
-      if(!markerA) markerA = new google.maps.Marker({
-        map,
-        icon: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-        title: "ต้นทาง"
-      });
-      markerA.setPosition(loc);
-      markerA.setMap(map);
+      if(!markerA) markerA = createMarker(loc, '#007bff', "ต้นทาง");
+      else markerA.setPosition(loc);
 
       map.panTo(loc);
       currentPos = {lat:loc.lat(), lng:loc.lng()};
@@ -288,9 +303,11 @@ function initMap(){
     }
   });
 
-  // Autocomplete for end
+  // Autocomplete ปลายทาง
   const acEnd = new google.maps.places.Autocomplete(document.getElementById('search'), {
-    bounds: phuketBounds, componentRestrictions:{country:'th'}, fields:['place_id','geometry','name','formatted_address']
+    bounds: phuketBounds,
+    componentRestrictions:{country:'th'},
+    fields:['place_id','geometry','name','formatted_address']
   });
   acEnd.addListener('place_changed', () => {
     const place = acEnd.getPlace();
@@ -298,13 +315,8 @@ function initMap(){
       const loc = place.geometry.location;
       if(!phuketBounds.contains(loc)){ alert(i18n[currentLang].onlyPhuket); return; }
 
-      if(!markerB) markerB = new google.maps.Marker({
-        map,
-        icon: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
-        title: "ปลายทาง"
-      });
-      markerB.setPosition(loc);
-      markerB.setMap(map);
+      if(!markerB) markerB = createMarker(loc, '#ff0000', "ปลายทาง");
+      else markerB.setPosition(loc);
 
       map.panTo(loc);
       if(currentPos) computeRoutes(currentPos, loc);
@@ -320,15 +332,11 @@ function initMap(){
       const posLatLng = new google.maps.LatLng(currentPos.lat, currentPos.lng);
       if(!phuketBounds.contains(posLatLng)) return;
 
-      if(!markerA) markerA = new google.maps.Marker({
-        map,
-        icon: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-        title: 'You'
-      });
-      markerA.setPosition(posLatLng);
-      markerA.setMap(map);
+      if(!markerA) markerA = createMarker(posLatLng, '#007bff', 'You');
+      else markerA.setPosition(posLatLng);
+
       map.setCenter(posLatLng);
-    }, ()=>{ /* ignore */ });
+    });
   }
 
   // btn-current
@@ -339,13 +347,9 @@ function initMap(){
         const pos = new google.maps.LatLng(currentPos.lat, currentPos.lng);
         if(!phuketBounds.contains(pos)){ alert(i18n[currentLang].outsidePhuket); return; }
 
-        if(!markerA) markerA = new google.maps.Marker({
-            map,
-            icon: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-            title: "ต้นทาง"
-        });
-        markerA.setPosition(pos); 
-        markerA.setMap(map); 
+        if(!markerA) markerA = createMarker(pos, '#007bff', "ต้นทาง");
+        else markerA.setPosition(pos);
+
         map.panTo(pos);
         if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
     }, ()=>{ alert('Unable to retrieve your location'); });
