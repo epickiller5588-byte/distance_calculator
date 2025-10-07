@@ -255,7 +255,7 @@ function renderFareTable(){
   // leave displayed state controlled by toggle (initially hidden to reduce clutter on mobile)
   document.getElementById('fareTable').style.display = 'none';
 }
-
+///map////
 function initMap(){
   const phuketBounds = new google.maps.LatLngBounds({lat:7.7,lng:98.2},{lat:8.1,lng:98.6});
   const center = {lat:7.8804,lng:98.3923};
@@ -397,6 +397,7 @@ function initMap(){
 
   applyLanguage();
 }
+
 
 /* -------------- Places text fallback -------------- */
 function triggerTextSearch(txt){
