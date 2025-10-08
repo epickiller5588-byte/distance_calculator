@@ -255,19 +255,19 @@ function renderFareTable(){
   document.getElementById('fareTable').style.display = 'none';
 }
 
-/* -------------- Map & Places -------------- */
-function initMap(){
+/* -------------- Map & Places (Fixed version) -------------- */
+function initMap() {
   const phuketBounds = new google.maps.LatLngBounds(
-    {lat:7.7,lng:98.2},
-    {lat:8.1,lng:98.6}
+    { lat: 7.7, lng: 98.2 },
+    { lat: 8.1, lng: 98.6 }
   );
-  const center = {lat:7.8804,lng:98.3923};
+  const center = { lat: 7.8804, lng: 98.3923 };
 
-  map = new google.maps.Map(document.getElementById('map'), {
+  map = new google.maps.Map(document.getElementById("map"), {
     center,
-    zoom:11,
-    mapTypeControl:false,
-    streetViewControl:false
+    zoom: 11,
+    mapTypeControl: false,
+    streetViewControl: false,
   });
 
   directionsService = new google.maps.DirectionsService();
@@ -275,167 +275,179 @@ function initMap(){
   trafficLayer.setMap(map);
   placesService = new google.maps.places.PlacesService(map);
 
-  // -------------------- ICON SETUP --------------------
+  // -------------------- ICON SETUP (FIXED, NO WHITE BUG) --------------------
   const icons = {
     start: {
-      url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-        <svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'>
-          <circle cx='16' cy='16' r='10' fill='#1e88e5' stroke='white' stroke-width='3'/>
-        </svg>
-      `),
-      scaledSize: new google.maps.Size(32, 32)
+      url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+      scaledSize: new google.maps.Size(40, 40),
     },
     end: {
-      url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-        <svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'>
-          <circle cx='16' cy='16' r='10' fill='#e53935' stroke='white' stroke-width='3'/>
-        </svg>
-      `),
-      scaledSize: new google.maps.Size(32, 32)
-    }
+      url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+      scaledSize: new google.maps.Size(40, 40),
+    },
   };
 
   // -------------------- AUTOCOMPLETE START --------------------
   const acStart = new google.maps.places.Autocomplete(
-    document.getElementById('searchStart'),
+    document.getElementById("searchStart"),
     {
       bounds: phuketBounds,
-      componentRestrictions:{country:'th'},
-      fields:['place_id','geometry','name','formatted_address']
+      componentRestrictions: { country: "th" },
+      fields: ["place_id", "geometry", "name", "formatted_address"],
     }
   );
 
-  acStart.addListener('place_changed', () => {
+  acStart.addListener("place_changed", () => {
     const place = acStart.getPlace();
-    if(place?.geometry?.location){
+    if (place?.geometry?.location) {
       const loc = place.geometry.location;
-      if(!phuketBounds.contains(loc)){
+      if (!phuketBounds.contains(loc)) {
         alert(i18n[currentLang].onlyPhuket);
         return;
       }
-      if(!markerA){
-        markerA = new google.maps.Marker({map, icon: icons.start});
-      }
+      if (!markerA) markerA = new google.maps.Marker({ map, icon: icons.start });
       markerA.setPosition(loc);
       markerA.setMap(map);
       map.panTo(loc);
-      currentPos = {lat:loc.lat(), lng:loc.lng()};
-      if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
+      currentPos = { lat: loc.lat(), lng: loc.lng() };
+      if (markerB && markerB.getPosition())
+        computeRoutes(currentPos, markerB.getPosition());
     }
   });
 
   // -------------------- AUTOCOMPLETE END --------------------
   const acEnd = new google.maps.places.Autocomplete(
-    document.getElementById('search'),
+    document.getElementById("search"),
     {
       bounds: phuketBounds,
-      componentRestrictions:{country:'th'},
-      fields:['place_id','geometry','name','formatted_address']
+      componentRestrictions: { country: "th" },
+      fields: ["place_id", "geometry", "name", "formatted_address"],
     }
   );
 
-  acEnd.addListener('place_changed', () => {
+  acEnd.addListener("place_changed", () => {
     const place = acEnd.getPlace();
-    if(place?.geometry?.location){
+    if (place?.geometry?.location) {
       const loc = place.geometry.location;
-      if(!phuketBounds.contains(loc)){
+      if (!phuketBounds.contains(loc)) {
         alert(i18n[currentLang].onlyPhuket);
         return;
       }
-      if(!markerB){
-        markerB = new google.maps.Marker({map, icon: icons.end});
-      }
+      if (!markerB) markerB = new google.maps.Marker({ map, icon: icons.end });
       markerB.setPosition(loc);
       markerB.setMap(map);
       map.panTo(loc);
-      if(currentPos) computeRoutes(currentPos, loc);
+      if (currentPos) computeRoutes(currentPos, loc);
     } else {
-      triggerTextSearch(document.getElementById('search').value);
+      triggerTextSearch(document.getElementById("search").value);
     }
   });
 
   // -------------------- INITIAL LOCATION --------------------
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(p=>{
-      currentPos = {lat:p.coords.latitude, lng:p.coords.longitude};
-      const posLatLng = new google.maps.LatLng(currentPos.lat, currentPos.lng);
-      if(!phuketBounds.contains(posLatLng)) return;
-      if(!markerA) markerA = new google.maps.Marker({map, icon: icons.start});
-      markerA.setPosition(posLatLng);
-      markerA.setMap(map);
-      markerA.setTitle('You');
-      map.setCenter(posLatLng);
-    },()=>{ /* ignore */ });
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        currentPos = { lat: p.coords.latitude, lng: p.coords.longitude };
+        const posLatLng = new google.maps.LatLng(
+          currentPos.lat,
+          currentPos.lng
+        );
+        if (!phuketBounds.contains(posLatLng)) return;
+        if (!markerA)
+          markerA = new google.maps.Marker({ map, icon: icons.start });
+        markerA.setPosition(posLatLng);
+        markerA.setMap(map);
+        markerA.setTitle("You");
+        map.setCenter(posLatLng);
+      },
+      () => {}
+    );
   }
 
   // -------------------- BUTTON: CURRENT LOCATION --------------------
-  document.getElementById('btn-current').addEventListener('click', ()=>{
-    if(!navigator.geolocation){
-      alert('Geolocation not supported');
+  document.getElementById("btn-current").addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation not supported");
       return;
     }
-    navigator.geolocation.getCurrentPosition(p=>{
-      currentPos = {lat:p.coords.latitude, lng:p.coords.longitude};
-      const pos = new google.maps.LatLng(currentPos.lat, currentPos.lng);
-      if(!phuketBounds.contains(pos)){
-        alert(i18n[currentLang].outsidePhuket);
-        return;
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        currentPos = { lat: p.coords.latitude, lng: p.coords.longitude };
+        const pos = new google.maps.LatLng(currentPos.lat, currentPos.lng);
+        if (!phuketBounds.contains(pos)) {
+          alert(i18n[currentLang].outsidePhuket);
+          return;
+        }
+        if (!markerA)
+          markerA = new google.maps.Marker({ map, icon: icons.start });
+        markerA.setPosition(pos);
+        markerA.setMap(map);
+        map.panTo(pos);
+        if (markerB && markerB.getPosition())
+          computeRoutes(currentPos, markerB.getPosition());
+      },
+      () => {
+        alert("Unable to retrieve your location");
       }
-      if(!markerA) markerA = new google.maps.Marker({map, icon: icons.start});
-      markerA.setPosition(pos);
-      markerA.setMap(map);
-      map.panTo(pos);
-      if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
-    }, ()=>{
-      alert('Unable to retrieve your location');
-    });
+    );
   });
 
   // -------------------- BUTTON: CALCULATE FARE --------------------
-  document.getElementById('btn-calc').addEventListener('click', ()=>{
-    const selVehicle = document.getElementById('vehicle').value;
-    if(lastRoutes && lastRoutes.length>0){
+  document.getElementById("btn-calc").addEventListener("click", () => {
+    const selVehicle = document.getElementById("vehicle").value;
+    if (lastRoutes && lastRoutes.length > 0) {
       updateRouteFareLabels();
-      const pill = document.querySelector('.route-card.selected .fare-pill');
-      if(pill){
+      const pill = document.querySelector(".route-card.selected .fare-pill");
+      if (pill) {
         const idx = selectedRouteIndex;
-        const fare = calculateFare(lastRoutes[idx], selVehicle || 'grabCar');
+        const fare = calculateFare(lastRoutes[idx], selVehicle || "grabCar");
         pill.textContent = `${fare} ฿`;
       }
       return;
     }
-    if(currentPos && markerB && markerB.getPosition()){
+    if (currentPos && markerB && markerB.getPosition()) {
       computeRoutes(currentPos, markerB.getPosition());
     } else {
-      alert('กรุณาเลือกต้นทางและปลายทางก่อน (หรือใช้ปุ่ม 📍)');
+      alert("กรุณาเลือกต้นทางและปลายทางก่อน (หรือใช้ปุ่ม 📍)");
     }
   });
 
   // -------------------- BUTTON: RESET --------------------
-  document.getElementById('btn-reset').addEventListener('click', ()=>{
-    document.getElementById('search').value='';
-    document.getElementById('searchStart').value='';
+  document.getElementById("btn-reset").addEventListener("click", () => {
+    document.getElementById("search").value = "";
+    document.getElementById("searchStart").value = "";
     lastRoutes = [];
     selectedRouteIndex = 0;
-    document.getElementById('routesList').innerHTML = i18n[currentLang].noRoute;
-    polyLines.forEach(p=>p.setMap(null));
+    document.getElementById("routesList").innerHTML =
+      i18n[currentLang].noRoute;
+    polyLines.forEach((p) => p.setMap(null));
     polyLines = [];
-    poiMarkers.forEach(m=>m.setMap(null));
+    poiMarkers.forEach((m) => m.setMap(null));
     poiMarkers = [];
-    if(markerA){ markerA.setMap(null); markerA=null; }
-    if(markerB){ markerB.setMap(null); markerB=null; }
+    if (markerA) {
+      markerA.setMap(null);
+      markerA = null;
+    }
+    if (markerB) {
+      markerB.setMap(null);
+      markerB = null;
+    }
   });
 
   // -------------------- BUTTON: TOGGLE FARE --------------------
-  document.getElementById('btn-toggle-fare').addEventListener('click', ()=>{
-    const f = document.getElementById('fareTable');
-    const visible = f.style.display !== 'none';
-    f.style.display = visible ? 'none' : 'block';
-    f.setAttribute('aria-hidden', visible ? 'true' : 'false');
-  });
+  document
+    .getElementById("btn-toggle-fare")
+    .addEventListener("click", () => {
+      const f = document.getElementById("fareTable");
+      const visible = f.style.display !== "none";
+      f.style.display = visible ? "none" : "block";
+      f.setAttribute("aria-hidden", visible ? "true" : "false");
+    });
 
   // -------------------- VEHICLE CHANGE --------------------
-  document.getElementById('vehicle').addEventListener('change', updateRouteFareLabels);
+  document
+    .getElementById("vehicle")
+    .addEventListener("change", updateRouteFareLabels);
 
   // -------------------- LANGUAGE --------------------
   applyLanguage();
