@@ -1,7 +1,8 @@
+<!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Phuket Trip — Route & Fare</title>
 <style>
 :root{
@@ -55,33 +56,26 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
     <div class="logo">Trip Roule — Phuket demo
       <button id="btn-lang">🌐 English</button>
     </div>
-
     <div class="section-title" id="lbl-origin">ต้นทาง</div>
     <div class="search-row">
-      <place-autocomplete id="searchStart" placeholder="เลือกต้นทาง..." country="th"></place-autocomplete>
+      <input id="searchStart" placeholder="เลือกต้นทาง..." aria-label="ต้นทาง">
       <button id="btn-current" class="btn alt" title="ใช้ตำแหน่งปัจจุบัน" aria-label="ใช้ตำแหน่งปัจจุบัน">📍</button>
     </div>
-
     <div class="section-title" id="lbl-dest">ปลายทาง</div>
     <div class="search-row">
-      <place-autocomplete id="search" placeholder="ค้นหาปลายทาง..." country="th"></place-autocomplete>
+      <input id="search" placeholder="ค้นหาปลายทาง..." aria-label="ปลายทาง">
     </div>
-
     <div class="controls-row">
       <select id="vehicle" aria-label="เลือกยานพาหนะ"></select>
       <button id="btn-calc" class="btn">คำนวณ</button>
       <button id="btn-reset" class="btn alt">รีเซ็ต</button>
     </div>
-
     <button id="btn-toggle-fare" class="btn alt">แสดง/ซ่อนตารางราคา</button>
-
     <div class="section-title" style="margin-top:8px" id="lbl-recommend">เส้นทางที่แนะนำ</div>
     <div class="routes" id="routesList" role="list"></div>
   </aside>
-
   <main class="map-wrap">
     <div id="map" role="application" aria-label="Map"></div>
-
     <div class="fare-table" id="fareTable" aria-hidden="true">
       <div id="fare-title" style="font-weight:800;margin-bottom:6px">ตารางราคา</div>
       <table>
@@ -89,7 +83,6 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
         <tbody id="fareRows"></tbody>
       </table>
     </div>
-
     <div class="legend" id="legend">
       <div style="font-weight:700;margin-right:8px" id="legend-title">Traffic</div>
       <div class="dot fast"></div><div style="font-size:13px;color:var(--muted)" id="legend-fast">Fast</div>
@@ -99,135 +92,105 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
   </main>
 </div>
 
-<script type="module">
-import { AdvancedMarkerElement } from "https://unpkg.com/@googlemaps/marker/dist/marker.esm.js";
+<script>
+/* ---------- Data & I18N ---------- */
+const vehicleRates = {grabCar:{base:35,perKm:10,freeKm:2,min:50},grabBike:{base:20,perKm:7,freeKm:1,min:25},boltEconomy:{base:50,perKm:10,freeKm:2,min:100},boltStandard:{base:100,perKm:12,freeKm:2,min:200},boltVan:{base:250,perKm:15,freeKm:2,min:300},boltXL:{base:200,perKm:15,freeKm:2,min:300},boltTaxi:{base:100,perKm:12,freeKm:2,min:200},inDrive:{base:30,perKm:9,freeKm:1,min:80},taxiMeter:{base:50,perKm:12,freeKm:2,min:100},smartBus:{base:100,perKm:0,freeKm:0,min:100,fixed:true},songthaew:{base:40,perKm:0,freeKm:0,min:40,fixed:true},pinkBus:{base:15,perKm:0,freeKm:0,min:15,fixed:true},tukTuk:{base:200,perKm:0,freeKm:0,min:200,fixed:true},motoTaxi:{base:80,perKm:0,freeKm:0,min:80,fixed:true}};
+const vehicleNames={th:{grabCar:"GrabCar",grabBike:"GrabBike",boltEconomy:"Bolt Economy",boltStandard:"Bolt Standard",boltVan:"Bolt Van",boltXL:"Bolt XL",boltTaxi:"Bolt Taxi",inDrive:"inDrive",taxiMeter:"Taxi Meter",smartBus:"รถบัส Smart Bus",songthaew:"รถสองแถว",pinkBus:"รถบัสสีชมพู",tukTuk:"ตุ๊กตุ๊ก",motoTaxi:"มอเตอร์ไซค์รับจ้าง"},en:{grabCar:"GrabCar",grabBike:"GrabBike",boltEconomy:"Bolt Economy",boltStandard:"Bolt Standard",boltVan:"Bolt Van",boltXL:"Bolt XL",boltTaxi:"Bolt Taxi",inDrive:"inDrive",taxiMeter:"Taxi Meter",smartBus:"Smart Bus",songthaew:"Songthaew",pinkBus:"Pink Bus",tukTuk:"Tuk Tuk",motoTaxi:"Moto Taxi"}};
+const i18n={th:{search:"ค้นหาปลายทาง...",start:"เลือกต้นทาง...",originLabel:"ต้นทาง",destinationLabel:"ปลายทาง",calc:"คำนวณ",reset:"รีเซ็ต",fareTable:"ตารางราคา",popular:["หาดป่าตอง","พระใหญ่ (Big Buddha)","วัดฉลอง (Wat Chalong)"],noRoute:"ยังไม่มีเส้นทาง",onlyPhuket:"กรุณาเลือกตำแหน่งในภูเก็ตเท่านั้น",outsidePhuket:"ตำแหน่งอยู่นอกภูเก็ต",routeLabel:"เส้นทาง",kmLabel:"กม.",minsLabel:"นาที",traffic:"การจราจร",fast:"คล่องตัว",moderate:"ปานกลาง",heavy:"หนาแน่น",vehicleCol:"ยานพาหนะ",baseCol:"ฐานเริ่มต้น",perKmCol:"ต่อ กม.",currentPosBtn:"ใช้ตำแหน่งปัจจุบัน",toggleFare:"แสดง/ซ่อนตารางราคา"},en:{search:"Search destination...",start:"Select origin...",originLabel:"Origin",destinationLabel:"Destination",calc:"Calculate",reset:"Reset",fareTable:"Fare Table",popular:["Patong Beach","Big Buddha","Wat Chalong"],noRoute:"No routes yet",onlyPhuket:"Please select a location within Phuket only",outsidePhuket:"Location is outside Phuket",routeLabel:"Route",kmLabel:"km",minsLabel:"mins",traffic:"Traffic",fast:"Fast",moderate:"Moderate",heavy:"Heavy",vehicleCol:"Vehicle",baseCol:"Base",perKmCol:"Per km",currentPosBtn:"Use current location",toggleFare:"Show/Hide Fare Table"}};
+let currentLang='th';
 
-const vehicleRates = {
-  grabCar:{base:35,perKm:10,freeKm:2,min:50},
-  grabBike:{base:20,perKm:7,freeKm:1,min:25},
-  boltEconomy:{base:50,perKm:10,freeKm:2,min:100},
-  boltStandard:{base:100,perKm:12,freeKm:2,min:200},
-  boltVan:{base:250,perKm:15,freeKm:2,min:300},
-  boltXL:{base:200,perKm:15,freeKm:2,min:300},
-  boltTaxi:{base:100,perKm:12,freeKm:2,min:200},
-  inDrive:{base:30,perKm:9,freeKm:1,min:80},
-  taxiMeter:{base:50,perKm:12,freeKm:2,min:100},
-  smartBus:{base:100,perKm:0,freeKm:0,min:100,fixed:true},
-  songthaew:{base:40,perKm:0,freeKm:0,min:40,fixed:true},
-  pinkBus:{base:15,perKm:0,freeKm:0,min:15,fixed:true},
-  tukTuk:{base:200,perKm:0,freeKm:0,min:200,fixed:true},
-  motoTaxi:{base:80,perKm:0,freeKm:0,min:80,fixed:true}
-};
+/* ---------- State ---------- */
+let map,directionsService,trafficLayer,placesService;
+let markerA=null,markerB=null,currentPos=null,lastRoutes=[],selectedRouteIndex=0,polyLines=[],poiMarkers=[];
 
-const vehicleNames = {
-  th:{ grabCar:"GrabCar", grabBike:"GrabBike", boltEconomy:"Bolt Economy", boltStandard:"Bolt Standard", boltVan:"Bolt Van", boltXL:"Bolt XL", boltTaxi:"Bolt Taxi", inDrive:"inDrive", taxiMeter:"Taxi Meter", smartBus:"รถบัส Smart Bus", songthaew:"รถสองแถว", pinkBus:"รถบัสสีชมพู", tukTuk:"ตุ๊กตุ๊ก", motoTaxi:"มอเตอร์ไซค์รับจ้าง"},
-  en:{ grabCar:"GrabCar", grabBike:"GrabBike", boltEconomy:"Bolt Economy", boltStandard:"Bolt Standard", boltVan:"Bolt Van", boltXL:"Bolt XL", boltTaxi:"Bolt Taxi", inDrive:"inDrive", taxiMeter:"Taxi Meter", smartBus:"Smart Bus", songthaew:"Songthaew", pinkBus:"Pink Bus", tukTuk:"Tuk Tuk", motoTaxi:"Moto Taxi"}
-};
-
-const i18n = { /* ...เหมือนเดิม... */ };
-let currentLang = 'th';
-
-let map, directionsService, trafficLayer, markerA=null, markerB=null, lastRoutes=[], polyLines=[];
-
-/* --------- Helpers --------- */
+/* ---------- Helpers ---------- */
 function km(m){return (m/1000).toFixed(1);}
-function calculateFare(route, vehicleKey){
-  const v = vehicleRates[vehicleKey]; if(!v) return 0;
-  if(v.fixed) return v.min;
-  const kmDistance = route.legs[0].distance.value/1000;
-  let fare = v.base + Math.max(0, kmDistance-v.freeKm)*v.perKm;
-  return Math.max(Math.round(fare),v.min);
+function calculateFare(route,vehicleKey){const v=vehicleRates[vehicleKey];if(!v) return 0;if(v.fixed) return v.min;const kmDistance=route.legs[0].distance.value/1000;let fare=v.base+Math.max(0,kmDistance-v.freeKm)*v.perKm;return Math.max(Math.round(fare),v.min);}
+
+/* ---------- Language & UI ---------- */
+function applyLanguage(){
+  document.getElementById("btn-lang").textContent=(currentLang==="th"?"🌐 English":"🌐 ภาษาไทย");
+  document.getElementById("search").placeholder=i18n[currentLang].search;
+  document.getElementById("searchStart").placeholder=i18n[currentLang].start;
+  document.getElementById("btn-calc").textContent=i18n[currentLang].calc;
+  document.getElementById("btn-reset").textContent=i18n[currentLang].reset;
+  document.getElementById("fare-title").textContent=i18n[currentLang].fareTable;
+  document.getElementById("lbl-origin").textContent=i18n[currentLang].originLabel;
+  document.getElementById("lbl-dest").textContent=i18n[currentLang].destinationLabel;
+  document.getElementById("lbl-recommend").textContent=i18n[currentLang].routeLabel;
+  document.getElementById("legend-title").textContent=i18n[currentLang].traffic;
+  document.getElementById("legend-fast").textContent=i18n[currentLang].fast;
+  document.getElementById("legend-moderate").textContent=i18n[currentLang].moderate;
+  document.getElementById("legend-heavy").textContent=i18n[currentLang].heavy;
+  document.getElementById("th-vehicle").textContent=i18n[currentLang].vehicleCol;
+  document.getElementById("th-base").textContent=i18n[currentLang].baseCol;
+  document.getElementById("th-perkm").textContent=i18n[currentLang].perKmCol;
+  document.getElementById("btn-toggle-fare").textContent=i18n[currentLang].toggleFare;
+
+  const sel=document.getElementById("vehicle");sel.innerHTML="";
+  const ph=document.createElement("option");ph.value="";ph.textContent=(currentLang==='th'?'-- เลือกประเภทยานพาหนะ --':'-- Select vehicle --');ph.disabled=true;sel.appendChild(ph);
+  for(const k in vehicleRates){const opt=document.createElement("option");opt.value=k;opt.textContent=(vehicleNames[currentLang]&&vehicleNames[currentLang][k])?vehicleNames[currentLang][k]:k;sel.appendChild(opt);}
+  sel.value=sel.querySelector('option[value="grabCar"]')?'grabCar':sel.querySelector('option:not([disabled])').value;
+
+  if(!lastRoutes||lastRoutes.length===0){document.getElementById('routesList').textContent=i18n[currentLang].noRoute;}
+  renderFareTable();
 }
+function renderFareTable(){const tbody=document.getElementById('fareRows');tbody.innerHTML='';for(const k in vehicleRates){const v=vehicleRates[k];const name=(vehicleNames[currentLang]&&vehicleNames[currentLang][k])?vehicleNames[currentLang][k]:k;const row=document.createElement('tr');if(v.fixed){row.innerHTML=`<td>${name}</td><td>${v.min} ฿ (fixed)</td><td>-</td>`;}else{row.innerHTML=`<td>${name}</td><td>${v.base} ฿</td><td>${v.perKm} ฿</td>`;}tbody.appendChild(row);}document.getElementById('fareTable').style.display='none';}
 
-/* --------- Map & Routing --------- */
-async function initMap(){
-  const phuketBounds = new google.maps.LatLngBounds({lat:7.7,lng:98.2},{lat:8.1,lng:98.6});
-  map = new google.maps.Map(document.getElementById('map'),{center:{lat:7.8804,lng:98.3923},zoom:11,mapTypeControl:false,streetViewControl:false});
-  directionsService = new google.maps.DirectionsService();
-  trafficLayer = new google.maps.TrafficLayer(); trafficLayer.setMap(map);
+/* ---------- Map Init ---------- */
+function initMap(){
+  const phuketBounds=new google.maps.LatLngBounds({lat:7.7,lng:98.2},{lat:8.1,lng:98.6});
+  const center={lat:7.8804,lng:98.3923};
+  map=new google.maps.Map(document.getElementById('map'),{center,zoom:11,mapTypeControl:false,streetViewControl:false});
+  directionsService=new google.maps.DirectionsService();
+  trafficLayer=new google.maps.TrafficLayer();trafficLayer.setMap(map);
+  placesService=new google.maps.places.PlacesService(map);
 
-  // Current location
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(p=>{
-      const pos = {lat:p.coords.latitude,lng:p.coords.longitude};
-      const latLng = new google.maps.LatLng(pos.lat,pos.lng);
-      if(!phuketBounds.contains(latLng)) return;
-      markerA = new AdvancedMarkerElement({map, position:latLng, title:'You'});
-      map.setCenter(latLng);
-    });
-  }
+  const acStart=new google.maps.places.Autocomplete(document.getElementById('searchStart'),{bounds:phuketBounds,componentRestrictions:{country:'th'},fields:['place_id','geometry','name','formatted_address']});
+  acStart.addListener('place_changed',()=>{const place=acStart.getPlace();if(place?.geometry?.location){const loc=place.geometry.location;if(!phuketBounds.contains(loc)){alert(i18n[currentLang].onlyPhuket);return;}if(!markerA) markerA=new google.maps.Marker({map,icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});markerA.setPosition(loc);markerA.setMap(map);map.panTo(loc);currentPos={lat:loc.lat(),lng:loc.lng()};if(markerB&&markerB.getPosition()) computeRoutes(currentPos,markerB.getPosition());}});
 
-  // Buttons
-  document.getElementById('btn-current').addEventListener('click', async ()=>{
-    if(!navigator.geolocation) return alert('Geolocation not supported');
-    navigator.geolocation.getCurrentPosition(p=>{
-      const pos={lat:p.coords.latitude,lng:p.coords.longitude};
-      const latLng=new google.maps.LatLng(pos.lat,pos.lng);
-      if(!phuketBounds.contains(latLng)) return alert('ตำแหน่งอยู่นอกภูเก็ต');
-      if(!markerA) markerA=new AdvancedMarkerElement({map,position:latLng,title:'You'});
-      markerA.position=latLng;
-      map.panTo(latLng);
-      if(markerB) computeRoutes(markerA.position, markerB.position);
-    },()=>alert('ไม่สามารถรับตำแหน่งของคุณได้'));
-  });
+  const acEnd=new google.maps.places.Autocomplete(document.getElementById('search'),{bounds:phuketBounds,componentRestrictions:{country:'th'},fields:['place_id','geometry','name','formatted_address']});
+  acEnd.addListener('place_changed',()=>{const place=acEnd.getPlace();if(place?.geometry?.location){const loc=place.geometry.location;if(!phuketBounds.contains(loc)){alert(i18n[currentLang].onlyPhuket);return;}if(!markerB) markerB=new google.maps.Marker({map,icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'red',fillOpacity:1,strokeWeight:0}});markerB.setPosition(loc);markerB.setMap(map);map.panTo(loc);if(markerA&&markerA.getPosition()) computeRoutes(markerA.getPosition(),loc);}});
 
-  document.getElementById('btn-reset').addEventListener('click',()=>{
-    lastRoutes=[]; polyLines.forEach(p=>p.setMap(null)); polyLines=[];
-    if(markerA){markerA.setMap(null);markerA=null;}
-    if(markerB){markerB.setMap(null);markerB=null;}
-    document.getElementById('search').value=''; document.getElementById('searchStart').value='';
-    document.getElementById('routesList').textContent='ยังไม่มีเส้นทาง';
-  });
-  
-  document.getElementById('btn-calc').addEventListener('click',()=>{
-    if(markerA && markerB) computeRoutes(markerA.position, markerB.position);
-    else alert('กรุณาเลือกต้นทางและปลายทางก่อน');
-  });
+  document.getElementById('btn-current').addEventListener('click',()=>{if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{currentPos={lat:p.coords.latitude,lng:p.coords.longitude};if(!markerA) markerA=new google.maps.Marker({map,icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});markerA.setPosition(currentPos);map.panTo(currentPos);});}});
 
+  document.getElementById('btn-calc').addEventListener('click',()=>{if(markerA&&markerB){computeRoutes(markerA.getPosition(),markerB.getPosition());}});
+  document.getElementById('btn-reset').addEventListener('click',()=>{if(markerA) markerA.setMap(null);if(markerB) markerB.setMap(null);markerA=markerB=null;lastRoutes=[];polyLines.forEach(p=>p.setMap(null));polyLines=[];document.getElementById('routesList').innerHTML=i18n[currentLang].noRoute;});
+  document.getElementById('btn-toggle-fare').addEventListener('click',()=>{const t=document.getElementById('fareTable');t.style.display=(t.style.display==='none')?'block':'none';});
+  document.getElementById('btn-lang').addEventListener('click',()=>{currentLang=(currentLang==='th'?'en':'th');applyLanguage();});
   applyLanguage();
 }
 
-async function computeRoutes(origin,dest){
-  const vehicleKey=document.getElementById('vehicle').value||'grabCar';
-  try{
-    const res=await directionsService.route({origin,destination:dest,travelMode:'DRIVING',provideRouteAlternatives:true});
-    if(res.routes.length===0) return alert('No routes');
-    polyLines.forEach(p=>p.setMap(null)); polyLines=[];
-    lastRoutes=res.routes;
-    renderRoutes(res.routes,vehicleKey);
-  }catch(e){alert('Directions request failed');}
+/* ---------- Compute Routes ---------- */
+function computeRoutes(origin,dest){
+  if(!origin||!dest) return;
+  directionsService.route({origin,destination:dest,travelMode:google.maps.TravelMode.DRIVING,provideRouteAlternatives:true},(res,status)=>{if(status==='OK'){lastRoutes=res.routes;polyLines.forEach(p=>p.setMap(null));polyLines=[];renderRoutes();}else{alert(status);}});
 }
+function renderRoutes(){
+  const container=document.getElementById('routesList');container.innerHTML='';polyLines=[];lastRoutes.forEach((r,i)=>{
+    const path=new google.maps.Polyline({path:r.overview_path,strokeColor:'#1e88e5',strokeOpacity:0.6,strokeWeight:5,map:map});
+    path.addListener('click',()=>{selectedRouteIndex=i;highlightRoute();});
+    polyLines.push(path);
 
-function renderRoutes(routes,vehicleKey){
-  const container=document.getElementById('routesList'); container.innerHTML='';
-  routes.forEach((r,i)=>{
-    const path=r.overview_path.map(p=>({lat:p.lat(),lng:p.lng()}));
-    const poly=new google.maps.Polyline({path,map,strokeColor:'#'+Math.floor(Math.random()*16777215).toString(16),strokeWeight:6,strokeOpacity:0.6});
-    poly.routeIndex=i; polyLines.push(poly);
-    poly.addListener('click',()=>{selectedRouteIndex=i; highlightSelected(); map.fitBounds(r.bounds);});
-    const card=document.createElement('div'); card.className='route-card'; card.dataset.routeIndex=i;
-    const distText=`${km(r.legs[0].distance.value)} กม.`; const durText=`${Math.round(r.legs[0].duration.value/60)} นาที`;
-    const fare=calculateFare(r,vehicleKey);
-    card.innerHTML=`<div class="route-left"><div class="route-title">เส้นทาง ${i+1}</div><div class="route-meta">${distText} | ${durText}</div></div><div class="fare-pill">${fare} ฿</div>`;
-    card.onclick=()=>{drawPolyline(r,i); highlightSelected(); map.fitBounds(r.bounds);}
+    const card=document.createElement('div');card.className='route-card';card.addEventListener('click',()=>{selectedRouteIndex=i;highlightRoute();});
+    const left=document.createElement('div');left.className='route-left';
+    const dist=r.legs[0].distance?`${km(r.legs[0].distance.value)} ${i18n[currentLang].kmLabel}`:i18n[currentLang].noRoute;
+    const dur=r.legs[0].duration?`${Math.round(r.legs[0].duration.value/60)} ${i18n[currentLang].minsLabel}`:i18n[currentLang].noRoute;
+    left.innerHTML=`<div class="route-title">${i18n[currentLang].routeLabel} ${i+1}</div><div class="route-meta">${dist} | ${dur}</div>`;
+    card.appendChild(left);
+
+    const right=document.createElement('div');right.className='fare-pill';const v=document.getElementById('vehicle').value||'grabCar';right.textContent=`${calculateFare(r,v)} ฿`;
+    card.appendChild(right);
     container.appendChild(card);
   });
-  selectedRouteIndex=0; drawPolyline(routes[0],0); highlightSelected();
+  highlightRoute();
 }
-
-function drawPolyline(route,index){
-  polyLines.forEach((p,i)=>{p.setOptions({strokeOpacity:i===index?1:0.4,strokeWeight:i===index?8:6});});
+function highlightRoute(){
+  polyLines.forEach((p,i)=>p.setOptions({strokeOpacity:(i===selectedRouteIndex?1:0.6),strokeWeight:(i===selectedRouteIndex?7:5)}));
+  const cards=document.querySelectorAll('.route-card');cards.forEach((c,i)=>c.classList.toggle('selected',i===selectedRouteIndex));
 }
-
-function highlightSelected(){
-  document.querySelectorAll('.route-card').forEach((c,i)=>c.classList.toggle('selected',i===selectedRouteIndex));
-}
-
 window.initMap=initMap;
 </script>
-
-<script src="https://maps.googleapis.com/maps-api-v3/api/js?key=AIzaSyDcAtU6iQwn7aUsNwCHST73U2pqKbImiJM&callback=initMap" async defer></script>
-<script type="module" src="https://unpkg.com/@googlemaps/marker/dist/marker.esm.js"></script>
-<script type="module" src="https://unpkg.com/@googlemaps/places/dist/places.esm.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcAtU6iQwn7aUsNwCHST73U2pqKbImiJM&libraries=places&callback=initMap" async defer></script>
 </body>
 </html>
