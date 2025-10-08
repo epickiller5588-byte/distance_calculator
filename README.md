@@ -1,4 +1,3 @@
-
 <html lang="th">
 <head>
 <meta charset="utf-8" />
@@ -258,80 +257,145 @@ function renderFareTable(){
 
 /* -------------- Map & Places -------------- */
 function initMap(){
-  const phuketBounds = new google.maps.LatLngBounds({lat:7.7,lng:98.2},{lat:8.1,lng:98.6});
+  const phuketBounds = new google.maps.LatLngBounds(
+    {lat:7.7,lng:98.2},
+    {lat:8.1,lng:98.6}
+  );
   const center = {lat:7.8804,lng:98.3923};
-  map = new google.maps.Map(document.getElementById('map'), {center, zoom:11, mapTypeControl:false, streetViewControl:false});
+
+  map = new google.maps.Map(document.getElementById('map'), {
+    center,
+    zoom:11,
+    mapTypeControl:false,
+    streetViewControl:false
+  });
+
   directionsService = new google.maps.DirectionsService();
-  trafficLayer = new google.maps.TrafficLayer(); trafficLayer.setMap(map);
+  trafficLayer = new google.maps.TrafficLayer();
+  trafficLayer.setMap(map);
   placesService = new google.maps.places.PlacesService(map);
 
-  // Autocomplete for start
-  const acStart = new google.maps.places.Autocomplete(document.getElementById('searchStart'), {
-    bounds: phuketBounds, componentRestrictions:{country:'th'}, fields:['place_id','geometry','name','formatted_address']
-  });
+  // -------------------- ICON SETUP --------------------
+  const icons = {
+    start: {
+      url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+        <svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'>
+          <circle cx='16' cy='16' r='10' fill='#1e88e5' stroke='white' stroke-width='3'/>
+        </svg>
+      `),
+      scaledSize: new google.maps.Size(32, 32)
+    },
+    end: {
+      url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+        <svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'>
+          <circle cx='16' cy='16' r='10' fill='#e53935' stroke='white' stroke-width='3'/>
+        </svg>
+      `),
+      scaledSize: new google.maps.Size(32, 32)
+    }
+  };
+
+  // -------------------- AUTOCOMPLETE START --------------------
+  const acStart = new google.maps.places.Autocomplete(
+    document.getElementById('searchStart'),
+    {
+      bounds: phuketBounds,
+      componentRestrictions:{country:'th'},
+      fields:['place_id','geometry','name','formatted_address']
+    }
+  );
+
   acStart.addListener('place_changed', () => {
     const place = acStart.getPlace();
     if(place?.geometry?.location){
       const loc = place.geometry.location;
-      if(!phuketBounds.contains(loc)){ alert(i18n[currentLang].onlyPhuket); return; }
-      if(!markerA) markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});
-      markerA.setPosition(loc); markerA.setMap(map);
+      if(!phuketBounds.contains(loc)){
+        alert(i18n[currentLang].onlyPhuket);
+        return;
+      }
+      if(!markerA){
+        markerA = new google.maps.Marker({map, icon: icons.start});
+      }
+      markerA.setPosition(loc);
+      markerA.setMap(map);
       map.panTo(loc);
       currentPos = {lat:loc.lat(), lng:loc.lng()};
       if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
     }
   });
 
-  // Autocomplete for end
-  const acEnd = new google.maps.places.Autocomplete(document.getElementById('search'), {
-    bounds: phuketBounds, componentRestrictions:{country:'th'}, fields:['place_id','geometry','name','formatted_address']
-  });
+  // -------------------- AUTOCOMPLETE END --------------------
+  const acEnd = new google.maps.places.Autocomplete(
+    document.getElementById('search'),
+    {
+      bounds: phuketBounds,
+      componentRestrictions:{country:'th'},
+      fields:['place_id','geometry','name','formatted_address']
+    }
+  );
+
   acEnd.addListener('place_changed', () => {
     const place = acEnd.getPlace();
     if(place?.geometry?.location){
       const loc = place.geometry.location;
-      if(!phuketBounds.contains(loc)){ alert(i18n[currentLang].onlyPhuket); return; }
-      if(!markerB) markerB = new google.maps.Marker({map, icon:'http://maps.google.com/mapfiles/ms/icons/red-dot.png'});
-      markerB.setPosition(loc); markerB.setMap(map);
+      if(!phuketBounds.contains(loc)){
+        alert(i18n[currentLang].onlyPhuket);
+        return;
+      }
+      if(!markerB){
+        markerB = new google.maps.Marker({map, icon: icons.end});
+      }
+      markerB.setPosition(loc);
+      markerB.setMap(map);
       map.panTo(loc);
       if(currentPos) computeRoutes(currentPos, loc);
     } else {
-      // fallback to text search
       triggerTextSearch(document.getElementById('search').value);
     }
   });
 
-  // try initial geolocation (non-blocking)
+  // -------------------- INITIAL LOCATION --------------------
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(p=>{
       currentPos = {lat:p.coords.latitude, lng:p.coords.longitude};
       const posLatLng = new google.maps.LatLng(currentPos.lat, currentPos.lng);
       if(!phuketBounds.contains(posLatLng)) return;
-      if(!markerA) markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});
-      markerA.setPosition(posLatLng); markerA.setMap(map); markerA.setTitle('You');
+      if(!markerA) markerA = new google.maps.Marker({map, icon: icons.start});
+      markerA.setPosition(posLatLng);
+      markerA.setMap(map);
+      markerA.setTitle('You');
       map.setCenter(posLatLng);
     },()=>{ /* ignore */ });
   }
 
-  // wire UI buttons
-  document.getElementById('btn-current').addEventListener('click', ()=> {
-    if(!navigator.geolocation){ alert('Geolocation not supported'); return; }
+  // -------------------- BUTTON: CURRENT LOCATION --------------------
+  document.getElementById('btn-current').addEventListener('click', ()=>{
+    if(!navigator.geolocation){
+      alert('Geolocation not supported');
+      return;
+    }
     navigator.geolocation.getCurrentPosition(p=>{
       currentPos = {lat:p.coords.latitude, lng:p.coords.longitude};
       const pos = new google.maps.LatLng(currentPos.lat, currentPos.lng);
-      if(!phuketBounds.contains(pos)){ alert(i18n[currentLang].outsidePhuket); return; }
-      if(!markerA) markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});
-      markerA.setPosition(pos); markerA.setMap(map); map.panTo(pos);
+      if(!phuketBounds.contains(pos)){
+        alert(i18n[currentLang].outsidePhuket);
+        return;
+      }
+      if(!markerA) markerA = new google.maps.Marker({map, icon: icons.start});
+      markerA.setPosition(pos);
+      markerA.setMap(map);
+      map.panTo(pos);
       if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
-    }, ()=>{ alert('Unable to retrieve your location'); });
+    }, ()=>{
+      alert('Unable to retrieve your location');
+    });
   });
 
+  // -------------------- BUTTON: CALCULATE FARE --------------------
   document.getElementById('btn-calc').addEventListener('click', ()=>{
-    // If we already have routes, just update fares; else compute if both markers present
     const selVehicle = document.getElementById('vehicle').value;
     if(lastRoutes && lastRoutes.length>0){
-      updateRouteFareLabels(); // refresh prices in cards
-      // Also update fare shown for selected route
+      updateRouteFareLabels();
       const pill = document.querySelector('.route-card.selected .fare-pill');
       if(pill){
         const idx = selectedRouteIndex;
@@ -347,16 +411,22 @@ function initMap(){
     }
   });
 
+  // -------------------- BUTTON: RESET --------------------
   document.getElementById('btn-reset').addEventListener('click', ()=>{
-    document.getElementById('search').value=''; document.getElementById('searchStart').value='';
-    lastRoutes = []; selectedRouteIndex = 0;
+    document.getElementById('search').value='';
+    document.getElementById('searchStart').value='';
+    lastRoutes = [];
+    selectedRouteIndex = 0;
     document.getElementById('routesList').innerHTML = i18n[currentLang].noRoute;
-    polyLines.forEach(p=>p.setMap(null)); polyLines = [];
-    poiMarkers.forEach(m=>m.setMap(null)); poiMarkers = [];
+    polyLines.forEach(p=>p.setMap(null));
+    polyLines = [];
+    poiMarkers.forEach(m=>m.setMap(null));
+    poiMarkers = [];
     if(markerA){ markerA.setMap(null); markerA=null; }
     if(markerB){ markerB.setMap(null); markerB=null; }
   });
 
+  // -------------------- BUTTON: TOGGLE FARE --------------------
   document.getElementById('btn-toggle-fare').addEventListener('click', ()=>{
     const f = document.getElementById('fareTable');
     const visible = f.style.display !== 'none';
@@ -364,8 +434,10 @@ function initMap(){
     f.setAttribute('aria-hidden', visible ? 'true' : 'false');
   });
 
+  // -------------------- VEHICLE CHANGE --------------------
   document.getElementById('vehicle').addEventListener('change', updateRouteFareLabels);
 
+  // -------------------- LANGUAGE --------------------
   applyLanguage();
 }
 
