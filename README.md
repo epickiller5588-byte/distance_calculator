@@ -9,6 +9,8 @@
   --accent:#1e88e5; --muted:#6b7280; --card:#ffffff; --bg:#f6f8fb;
   --rounded:12px;
 }
+  <link rel="icon" href="https://maps.gstatic.com/favicon.ico">
+
   h1, h2, h3 { display: none; }
 html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Sarabun",sans-serif;background:var(--bg);color:#112;}
 /* Layout: Desktop = split, Mobile = map top, controls bottom (locked viewport, no page scroll) */
