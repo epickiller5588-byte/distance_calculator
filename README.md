@@ -1,9 +1,9 @@
-
 <html lang="th">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Phuket Trip — Route & Fare</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+4v+3s8z1qgqkGk3mF2k2KJp2GkQmYh2MShb3f3Hg=" crossorigin=""/>
 <style>
 :root{
   --accent:#1e88e5; --muted:#6b7280; --card:#ffffff; --bg:#f6f8fb;
@@ -11,9 +11,8 @@
 }
   h1, h2, h3 { display: none; }
 html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Sarabun",sans-serif;background:var(--bg);color:#112;}
-/* Layout: Desktop = split, Mobile = map top, controls bottom (locked viewport, no page scroll) */
 .wrap{display:flex;height:100vh;gap:12px;padding:12px;box-sizing:border-box;}
-.map-wrap{flex:1;position:relative;border-radius:var(--rounded);overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.06);min-height:320px;}
+.map-wrap{flex:1;position:relative;border-radius:var(--rounded);overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.06);min-height:320px;background:#e9eef6}
 #map{width:100%;height:100%}
 .sidebar{width:420px;min-width:320px;background:var(--card);border-radius:var(--rounded);box-shadow:0 8px 24px rgba(15,23,42,.08);padding:16px;display:flex;flex-direction:column;gap:10px;overflow:auto;}
 .logo{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px;position:relative;}
@@ -44,19 +43,75 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
 .moderate{background:linear-gradient(90deg,#f1c40f,#f39c12)}
 .heavy{background:linear-gradient(90deg,#e74c3c,#c0392b)}
 
-/* Responsive: mobile column layout with map on top and controls fixed bottom area */
+#map-error{position:absolute;left:12px;right:12px;top:12px;bottom:12px;background:rgba(255,255,255,0.95);z-index:9999;border-radius:12px;display:none;align-items:center;justify-content:center;padding:20px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.08)}
+#map-error h2{margin:0 0 8px 0}
+#map-error p{margin:0 0 12px 0;color:#334}
+#map-error button{padding:8px 12px;border-radius:8px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+
+.marker-shadow{filter:drop-shadow(0 6px 8px rgba(17,24,39,0.12));}
+
 @media(max-width:1000px){
   .wrap{flex-direction:column;padding:8px;}
   .sidebar{width:auto;min-width:unset;max-height:40vh;}
   .map-wrap{height:60vh;min-height:320px;}
   .fare-table{right:10px;bottom:10px;min-width:140px;}
 }
+@media(max-width:768px){
+  .wrap{
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    gap: 0;
+    padding: 0;
+  }
+
+
+  .map-wrap{
+    order: -1; 
+    width: 100%;
+    height: 40vh;
+    flex-shrink: 0;
+  }
+
+  .sidebar{
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    box-sizing: border-box;
+  }
+
+  .routes{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: none;
+  }
+
+  #btn-lang{
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 9999;
+  }
+  
+  .legend {
+    padding: 3px 5px;
+    font-size: 8px;       
+  }
+  .dot {
+    width: 10px;
+    height: 3px;          
+    margin-right: 3px;
+  }
+
+}
+
 </style>
 </head>
 <body>
 <div class="wrap">
   <aside class="sidebar" aria-label="controls">
-    <div class="logo">Trip Roule — Phuket demo
+    <div class="logo"> 
       <button id="btn-lang">🌐 English</button>
     </div>
 
@@ -86,6 +141,17 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
   <main class="map-wrap">
     <div id="map" role="application" aria-label="Map"></div>
 
+    <div id="map-error" role="alert">
+      <div>
+        <h2>แผนที่ไม่สามารถโหลดได้</h2>
+        <p id="map-error-msg">ระบบตรวจพบปัญหาในการโหลด Google Maps (เช่น API key ไม่ถูกต้อง หรือถูกปิดการใช้งาน)</p>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
+          <button id="map-retry">ลองโหลดใหม่</button>
+          <button id="map-doc" onclick="window.open('https://developers.google.com/maps/documentation/javascript/error-messages#invalid-key-map-error','_blank')">วิธีแก้ไข</button>
+        </div>
+      </div>
+    </div>
+
     <div class="fare-table" id="fareTable" aria-hidden="true">
       <div id="fare-title" style="font-weight:800;margin-bottom:6px">ตารางราคา</div>
       <table>
@@ -103,8 +169,9 @@ select{padding:8px;border-radius:8px;border:1px solid #e6e9ee;background:#fff}
   </main>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1j8g+8U5n2xQigb0kC4Jk5sZk2bS+3pA9u1r0i+M=" crossorigin=""></script>
 <script>
-/* -------------- Data -------------- */
+
 const vehicleRates = {
   grabCar:{base:35,perKm:10,freeKm:2,min:50},
   grabBike:{base:20,perKm:7,freeKm:1,min:25},
@@ -180,14 +247,12 @@ const i18n = {
 
 let currentLang = 'th';
 
-/* -------------- State -------------- */
 let map, directionsService, trafficLayer, placesService;
 let markerA = null, markerB = null;
 let currentPos = null, lastRoutes = [], selectedRouteIndex = 0, polyLines = [], poiMarkers = [];
+let usingLeafletFallback = false;
 
-/* -------------- Helpers -------------- */
 function km(m){ return (m/1000).toFixed(1); }
-
 function calculateFare(route, vehicleKey){
   const v = vehicleRates[vehicleKey];
   if(!v) return 0;
@@ -197,7 +262,20 @@ function calculateFare(route, vehicleKey){
   return Math.max(Math.round(fare), v.min);
 }
 
-/* -------------- UI: language, populate vehicle, fares -------------- */
+const destinationSvg = `
+<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 24 24'>
+  <defs>
+    <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+      <stop offset='0' stop-color='%231e88e5'/>
+      <stop offset='1' stop-color='%233a9bf0'/>
+    </linearGradient>
+  </defs>
+  <path d='M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z' fill='url(%23g)' stroke='%230b2540' stroke-opacity='0.12' stroke-width='0.5'/>
+  <circle cx='12' cy='9' r='2.6' fill='%23fff' />
+</svg>
+`;
+const destinationIconUrl = 'data:image/svg+xml;utf8,' + encodeURIComponent(destinationSvg);
+
 function applyLanguage(){
   document.getElementById("btn-lang").textContent = (currentLang==="th" ? "🌐 English" : "🌐 ภาษาไทย");
   document.getElementById("search").placeholder = i18n[currentLang].search;
@@ -217,9 +295,7 @@ function applyLanguage(){
   document.getElementById("th-perkm").textContent = i18n[currentLang].perKmCol;
   document.getElementById("btn-toggle-fare").textContent = i18n[currentLang].toggleFare;
 
-  // populate vehicle select & set default to first usable option (avoid empty value bug)
   const sel = document.getElementById("vehicle"); sel.innerHTML = "";
-  // placeholder (optional, not selected)
   const ph = document.createElement("option"); ph.value = ""; ph.textContent = (currentLang==='th'?'-- เลือกประเภทยานพาหนะ --':'-- Select vehicle --'); ph.disabled = true;
   sel.appendChild(ph);
   for(const k in vehicleRates){
@@ -228,11 +304,8 @@ function applyLanguage(){
     opt.textContent = (vehicleNames[currentLang] && vehicleNames[currentLang][k]) ? vehicleNames[currentLang][k] : k;
     sel.appendChild(opt);
   }
-  // set a sensible default so price calculation works immediately
   sel.value = sel.querySelector('option[value="grabCar"]') ? 'grabCar' : sel.querySelector('option:not([disabled])').value;
 
-
-  // ensure routes placeholder
   if(!lastRoutes || lastRoutes.length === 0){
     document.getElementById('routesList').textContent = i18n[currentLang].noRoute;
   }
@@ -250,170 +323,371 @@ function renderFareTable(){
     else { row.innerHTML = `<td>${name}</td><td>${v.base} ฿</td><td>${v.perKm} ฿</td>`; }
     tbody.appendChild(row);
   }
-  // leave displayed state controlled by toggle (initially hidden to reduce clutter on mobile)
   document.getElementById('fareTable').style.display = 'none';
 }
 
-/* -------------- Map & Places -------------- */
-function initMap(){
-  const phuketBounds = new google.maps.LatLngBounds({lat:7.7,lng:98.2},{lat:8.1,lng:98.6});
-  const center = {lat:7.8804,lng:98.3923};
-  map = new google.maps.Map(document.getElementById('map'), {center, zoom:11, mapTypeControl:false, streetViewControl:false});
+function initMap() {
+  const overlay = document.getElementById('map-error'); 
+  if (overlay) overlay.style.display = 'none';
+
+  const phuketBounds = new google.maps.LatLngBounds(
+    { lat: 7.68, lng: 98.15 },
+    { lat: 8.32, lng: 98.65 }
+  );
+
+  const center = { lat: 7.8804, lng: 98.3923 };
+  map = new google.maps.Map(document.getElementById('map'), {
+    center,
+    zoom: 11,
+    mapTypeControl: false,
+    streetViewControl: false
+  });
+
   directionsService = new google.maps.DirectionsService();
-  trafficLayer = new google.maps.TrafficLayer(); trafficLayer.setMap(map);
+  trafficLayer = new google.maps.TrafficLayer();
+  trafficLayer.setMap(map);
   placesService = new google.maps.places.PlacesService(map);
 
-  // Autocomplete for start
-  const acStart = new google.maps.places.Autocomplete(document.getElementById('searchStart'), {
-    bounds: phuketBounds, componentRestrictions:{country:'th'}, fields:['place_id','geometry','name','formatted_address']
-  });
-  acStart.addListener('place_changed', () => {
-    const place = acStart.getPlace();
-    if(place?.geometry?.location){
-      const loc = place.geometry.location;
-      if(!phuketBounds.contains(loc)){ alert(i18n[currentLang].onlyPhuket); return; }
-      if(!markerA) markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});
-      markerA.setPosition(loc); markerA.setMap(map);
-      map.panTo(loc);
-      currentPos = {lat:loc.lat(), lng:loc.lng()};
-      if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
-    }
-  });
-
-  // Autocomplete for end
-  const acEnd = new google.maps.places.Autocomplete(document.getElementById('search'), {
-    bounds: phuketBounds, componentRestrictions:{country:'th'}, fields:['place_id','geometry','name','formatted_address']
-  });
-  acEnd.addListener('place_changed', () => {
-    const place = acEnd.getPlace();
-    if(place?.geometry?.location){
-      const loc = place.geometry.location;
-      if(!phuketBounds.contains(loc)){ alert(i18n[currentLang].onlyPhuket); return; }
-      if(!markerB) markerB = new google.maps.Marker({map, icon:'http://maps.google.com/mapfiles/ms/icons/red-dot.png'});
-      markerB.setPosition(loc); markerB.setMap(map);
-      map.panTo(loc);
-      if(currentPos) computeRoutes(currentPos, loc);
-    } else {
-      // fallback to text search
-      triggerTextSearch(document.getElementById('search').value);
-    }
-  });
-
-  // try initial geolocation (non-blocking)
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(p=>{
-      currentPos = {lat:p.coords.latitude, lng:p.coords.longitude};
-      const posLatLng = new google.maps.LatLng(currentPos.lat, currentPos.lng);
-      if(!phuketBounds.contains(posLatLng)) return;
-      if(!markerA) markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});
-      markerA.setPosition(posLatLng); markerA.setMap(map); markerA.setTitle('You');
-      map.setCenter(posLatLng);
-    },()=>{ /* ignore */ });
+  function setMarkerA(latLng) {
+    if (!markerA) {
+      markerA = new google.maps.Marker({
+        map,
+        position: latLng,
+        title: currentLang === 'th' ? 'ตำแหน่งปัจจุบันของคุณ' : 'Your current location',
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 9,
+          fillColor: '#1e88e5',
+          fillOpacity: 1,
+          strokeColor: '#fff',
+          strokeWeight: 2
+        }
+      });
+    } else markerA.setPosition(latLng);
   }
 
-  // wire UI buttons
-  document.getElementById('btn-current').addEventListener('click', ()=> {
-    if(!navigator.geolocation){ alert('Geolocation not supported'); return; }
-    navigator.geolocation.getCurrentPosition(p=>{
-      currentPos = {lat:p.coords.latitude, lng:p.coords.longitude};
-      const pos = new google.maps.LatLng(currentPos.lat, currentPos.lng);
-      if(!phuketBounds.contains(pos)){ alert(i18n[currentLang].outsidePhuket); return; }
-      if(!markerA) markerA = new google.maps.Marker({map, icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1e88e5',fillOpacity:1,strokeWeight:0}});
-      markerA.setPosition(pos); markerA.setMap(map); map.panTo(pos);
-      if(markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
-    }, ()=>{ alert('Unable to retrieve your location'); });
+  function setMarkerB(latLng, placeName, formattedAddress) {
+    if (!markerB) {
+      markerB = new google.maps.Marker({
+        map,
+        position: latLng,
+        title: placeName || (currentLang === 'th' ? 'ปลายทาง' : 'Destination'),
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 9,
+          fillColor: '#1e88e5',
+          fillOpacity: 1,
+          strokeColor: '#fff',
+          strokeWeight: 2
+        }
+      });
+      const info = new google.maps.InfoWindow({
+        content: `<strong>${placeName || ''}</strong><div style='font-size:12px;color:#666'>${formattedAddress || ''}</div>`
+      });
+      markerB.addListener('click', () => info.open(map, markerB));
+    } else {
+      markerB.setPosition(latLng);
+      markerB.setTitle(placeName || (currentLang === 'th' ? 'ปลายทาง' : 'Destination'));
+    }
+  }
+
+  const acStart = new google.maps.places.Autocomplete(document.getElementById('searchStart'), {
+    bounds: phuketBounds,
+    componentRestrictions: { country: 'th' },
+    fields: ['place_id', 'geometry', 'name', 'formatted_address']
   });
 
-  document.getElementById('btn-calc').addEventListener('click', ()=>{
-    // If we already have routes, just update fares; else compute if both markers present
-    const selVehicle = document.getElementById('vehicle').value;
-    if(lastRoutes && lastRoutes.length>0){
-      updateRouteFareLabels(); // refresh prices in cards
-      // Also update fare shown for selected route
-      const pill = document.querySelector('.route-card.selected .fare-pill');
-      if(pill){
-        const idx = selectedRouteIndex;
-        const fare = calculateFare(lastRoutes[idx], selVehicle || 'grabCar');
-        pill.textContent = `${fare} ฿`;
+  acStart.addListener('place_changed', () => {
+    const place = acStart.getPlace();
+    if (place?.geometry?.location) {
+      const loc = place.geometry.location;
+      if (!phuketBounds.contains(loc)) {
+        alert(i18n[currentLang].outsidePhuket);
+        return;
       }
+      setMarkerA(loc);
+      map.panTo(loc);
+      currentPos = { lat: loc.lat(), lng: loc.lng() };
+      if (markerB && markerB.getPosition()) computeRoutes(currentPos, markerB.getPosition());
+    }
+  });
+
+
+  const acEnd = new google.maps.places.Autocomplete(document.getElementById('search'), {
+    bounds: phuketBounds,
+    componentRestrictions: { country: 'th' },
+    fields: ['place_id', 'geometry', 'name', 'formatted_address']
+  });
+
+  acEnd.addListener('place_changed', () => {
+    const place = acEnd.getPlace();
+    if (!place?.geometry?.location) return;
+
+    const loc = place.geometry.location;
+    if (!phuketBounds.contains(loc)) {
+      alert(i18n[currentLang].outsidePhuket);
       return;
     }
-    if(currentPos && markerB && markerB.getPosition()){
-      computeRoutes(currentPos, markerB.getPosition());
-    } else {
-      alert('กรุณาเลือกต้นทางและปลายทางก่อน (หรือใช้ปุ่ม 📍)');
+
+    setMarkerB(loc, place.name, place.formatted_address);
+    map.panTo(loc);
+
+    if (markerA && markerA.getPosition()) {
+      computeRoutes(markerA.getPosition(), loc);
     }
   });
 
-  document.getElementById('btn-reset').addEventListener('click', ()=>{
-    document.getElementById('search').value=''; document.getElementById('searchStart').value='';
-    lastRoutes = []; selectedRouteIndex = 0;
-    document.getElementById('routesList').innerHTML = i18n[currentLang].noRoute;
-    polyLines.forEach(p=>p.setMap(null)); polyLines = [];
-    poiMarkers.forEach(m=>m.setMap(null)); poiMarkers = [];
-    if(markerA){ markerA.setMap(null); markerA=null; }
-    if(markerB){ markerB.setMap(null); markerB=null; }
-  });
-
-  document.getElementById('btn-toggle-fare').addEventListener('click', ()=>{
-    const f = document.getElementById('fareTable');
-    const visible = f.style.display !== 'none';
-    f.style.display = visible ? 'none' : 'block';
-    f.setAttribute('aria-hidden', visible ? 'true' : 'false');
-  });
-
-  document.getElementById('vehicle').addEventListener('change', updateRouteFareLabels);
-
-  applyLanguage();
-}
-
-/* -------------- Places text fallback -------------- */
-function triggerTextSearch(txt){
-  if(!txt) return;
-  const service = new google.maps.places.PlacesService(map);
-  service.textSearch({query:txt, bounds: map.getBounds(), region:'th'}, (results,status)=>{
-    if(status==='OK' && results[0]){
-      const loc = results[0].geometry.location;
-      if(!markerB) markerB = new google.maps.Marker({map, icon:'http://maps.google.com/mapfiles/ms/icons/red-dot.png'});
-      markerB.setPosition(loc); markerB.setMap(map);
-      map.panTo(loc);
-      if(currentPos) computeRoutes(currentPos, loc);
+  document.getElementById('btn-current').addEventListener('click', () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          if (!phuketBounds.contains(loc)) {
+            alert(i18n[currentLang].outsidePhuket);
+            return;
+          }
+          setMarkerA(loc);
+          map.panTo(loc);
+          currentPos = loc;
+          if (markerB && markerB.getPosition()) computeRoutes(loc, markerB.getPosition());
+        },
+        () => alert('ไม่สามารถระบุตำแหน่งของคุณได้')
+      );
     } else {
-      alert('No results found');
+      alert('เบราว์เซอร์ของคุณไม่รองรับการระบุตำแหน่ง');
     }
   });
+
+  document.getElementById('btn-calc').addEventListener('click', () => {
+    if (markerA && markerB) computeRoutes(markerA.getPosition(), markerB.getPosition());
+    else alert('กรุณาเลือกต้นทางและปลายทางก่อน');
+  });
+
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    if (markerA) markerA.setMap(null);
+    if (markerB) markerB.setMap(null);
+    markerA = markerB = null;
+    document.getElementById('search').value = '';
+    document.getElementById('searchStart').value = '';
+    document.getElementById('routesList').innerHTML = '';
+    polyLines.forEach(p => p.setMap(null));
+    polyLines = [];
+  });
+
+  document.getElementById('btn-toggle-fare').addEventListener('click', () => {
+    const table = document.getElementById('fareTable');
+    table.style.display = (table.style.display === 'none' || !table.style.display) ? 'block' : 'none';
+  });
+
+
 }
 
-/* -------------- Routing & render -------------- */
-function computeRoutes(origin, dest){
-  const selectedVehicle = document.getElementById('vehicle').value || 'grabCar';
-  directionsService.route({
-    origin: origin,
-    destination: dest,
-    travelMode: google.maps.TravelMode.DRIVING,
-    provideRouteAlternatives: true
-  }, (res,status) => {
-    if(status === 'OK'){
-      // remove old visuals
-      polyLines.forEach(p=>p.setMap(null)); polyLines=[];
+function computeRoutes(origin, dest) {
+  const selectedVehicle = document.getElementById('vehicle')?.value || 'grabCar';
+
+  const directions = new google.maps.DirectionsService();
+  directions.route(
+    {
+      origin,
+      destination: dest,
+      travelMode: google.maps.TravelMode.DRIVING,
+      provideRouteAlternatives: true,
+    },
+    (res, status) => {
+      if (status !== 'OK') return alert('ไม่สามารถค้นหาเส้นทางได้');
       lastRoutes = res.routes;
-      renderRoutes(res.routes, selectedVehicle);
-    } else {
-      alert('Directions request failed: ' + status);
+      const list = document.getElementById('routesList');
+      list.innerHTML = '';
+
+      polyLines.forEach(p => p.setMap(null));
+      polyLines = [];
+
+      res.routes.forEach((route, i) => {
+        const leg = route.legs[0];
+        const fare = calculateFare(route, selectedVehicle);
+
+        const card = document.createElement('div');
+        card.className = 'route-card';
+        card.innerHTML = `
+          <div class="route-left">
+            <div class="route-title">${i18n[currentLang].routeLabel} ${i+1}</div>
+            <div class="route-meta">${km(leg.distance.value)} ${i18n[currentLang].kmLabel} • ${leg.duration.text}</div>
+          </div>
+          <div class="fare-pill">${fare} ฿</div>
+        `;
+
+        card.addEventListener('click', () => {
+          polyLines.forEach(p => p.setMap(null));
+          const line = new google.maps.Polyline({
+            path: route.overview_path,
+            map,
+            strokeColor: '#1e88e5',
+            strokeOpacity: 0.8,
+            strokeWeight: 6
+          });
+          polyLines.push(line);
+          list.querySelectorAll('.route-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+
+          showServiceOption(selectedVehicle);
+        });
+
+        list.appendChild(card);
+      });
+
+      if (res.routes[0]) {
+        const line = new google.maps.Polyline({
+          path: res.routes[0].overview_path,
+          map,
+          strokeColor: '#1e88e5',
+          strokeOpacity: 0.8,
+          strokeWeight: 6
+        });
+        polyLines.push(line);
+      }
     }
+  );
+  
+}
+applyLanguage();
+
+function showServiceOption(vehicle) {
+  const appLinks = {
+    grabCar: 'grab://open?deeplink_id=ride',
+    grabBike: 'grab://open?deeplink_id=ride',
+    boltEconomy: 'bolt://open',
+    boltStandard: 'bolt://open',
+    boltVan: 'bolt://open',
+    inDrive: 'indrive://open',
+    taxiMeter: '',
+    tukTuk: '',
+    motoTaxi: ''
+  };
+
+  const webLinks = {
+    grabCar: 'https://surl.li/ifaylz',
+    grabBike: 'https://surl.li/ifaylz',
+    boltEconomy: 'https://bolt.eu/th-th/rides/',
+    boltStandard: 'https://bolt.eu/th-th/rides/',
+    boltVan: 'https://bolt.eu/th-th/rides/',
+    inDrive: 'https://indrive.com/en-th/city-rides',
+    taxiMeter: 'https://www.phuket.go.th/',
+    tukTuk: 'https://www.phuket.go.th/',
+    motoTaxi: 'https://www.phuket.go.th/'
+  };
+
+  const storeLinks = {
+    grabCar: {
+      play: 'https://play.google.com/store/apps/details?id=com.grabtaxi.passenger',
+      ios: 'https://apps.apple.com/app/grab/id647268330'
+    },
+    boltEconomy: {
+      play: 'https://play.google.com/store/apps/details?id=com.bolt.android.passenger',
+      ios: 'https://apps.apple.com/app/bolt/id675033630'
+    },
+    inDrive: {
+      play: 'https://play.google.com/store/apps/details?id=sinet.startup.inDriver',
+      ios: 'https://apps.apple.com/app/indrive/id996182390'
+    },
+    grabBike: {
+      play: 'https://play.google.com/store/apps/details?id=com.grabtaxi.passenger',
+      ios: 'https://apps.apple.com/app/grab/id647268330'
+    },
+    boltStandard: {
+      play: 'https://play.google.com/store/apps/details?id=com.bolt.android.passenger',
+      ios: 'https://apps.apple.com/app/bolt/id675033630'
+    },
+    boltVan: {
+      play: 'https://play.google.com/store/apps/details?id=com.bolt.android.passenger',
+      ios: 'https://apps.apple.com/app/bolt/id675033630'
+    }
+  };
+
+  const vehicleName = vehicleNames[currentLang][vehicle] || vehicle;
+
+  const modal = document.createElement('div');
+  modal.style.position = 'fixed';
+  modal.style.top = '0';
+  modal.style.left = '0';
+  modal.style.width = '100%';
+  modal.style.height = '100%';
+  modal.style.background = 'rgba(0,0,0,0.6)';
+  modal.style.display = 'flex';
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+  modal.style.zIndex = '9999';
+
+  modal.innerHTML = `
+    <div style="background:white;padding:20px 30px;border-radius:16px;text-align:center;max-width:300px;">
+      <h3 style="margin-bottom:10px;">เปิดบริการ ${vehicleName}</h3>
+      <p>คุณต้องการเปิดแอปหรือเว็บไซต์?</p>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:15px;">
+        <button id="openApp" style="background:#1e88e5;color:white;border:none;padding:8px 16px;border-radius:8px;">เปิดแอป</button>
+        <button id="openWeb" style="background:#4caf50;color:white;border:none;padding:8px 16px;border-radius:8px;">เว็บไซต์</button>
+      </div>
+      <button id="closeModal" style="margin-top:15px;background:#ccc;border:none;padding:6px 12px;border-radius:8px;">ยกเลิก</button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById('openApp').addEventListener('click', () => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isMobile = /android|iphone|ipad|ipod/i.test(userAgent);
+    const isIOS = /iphone|ipad|ipod/i.test(userAgent);
+
+    if (!isMobile) {
+      window.open(webLinks[vehicle], '_blank');
+      document.body.removeChild(modal);
+      return;
+    }
+
+    const appLink = appLinks[vehicle];
+    const playLink = storeLinks[vehicle]?.play;
+    const iosLink = storeLinks[vehicle]?.ios;
+    const storeLink = isIOS ? iosLink : playLink;
+
+    if (!appLink) {
+      window.open(webLinks[vehicle], '_blank');
+      document.body.removeChild(modal);
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      if (storeLink) window.location.href = storeLink; 
+    }, 1800);
+
+    window.location.href = appLink;
+
+    window.addEventListener('pagehide', () => clearTimeout(timeout));
+    window.addEventListener('blur', () => clearTimeout(timeout));
+
+    document.body.removeChild(modal);
+  });
+
+  document.getElementById('openWeb').addEventListener('click', () => {
+    window.open(webLinks[vehicle], '_blank');
+    document.body.removeChild(modal);
+  });
+
+  document.getElementById('closeModal').addEventListener('click', () => {
+    document.body.removeChild(modal);
   });
 }
 
 function renderRoutes(routes, vehicleKey){
-  const container = document.getElementById('routesList'); container.innerHTML = '';
+  console.log("renderRoutes called, routes:", routes);
+  const container = document.getElementById('routesList');
+  container.innerHTML = '';
   if(!routes || routes.length===0){
-    container.textContent = i18n[currentLang].noRoute; return;
+    container.textContent = i18n[currentLang].noRoute;
+    return;
   }
 
-  // draw polylines and create cards
   const colors = ['#2ecc71','#f1c40f','#e74c3c','#1e88e5','#9b59b6'];
+
   routes.forEach((r,i) => {
-    // polyline
+
     const path = r.overview_path.map(p => ({lat:p.lat(), lng:p.lng()}));
     const poly = new google.maps.Polyline({
       path: path,
@@ -424,51 +698,59 @@ function renderRoutes(routes, vehicleKey){
     });
     poly.routeIndex = i;
     polyLines.push(poly);
-    poly.addListener('click', ()=> {
+
+    poly.addListener('click', () => {
       selectedRouteIndex = poly.routeIndex;
+      drawPolyline(i);
       highlightSelected();
-      map.fitBounds(routes[selectedRouteIndex].bounds);
+      if(routes[selectedRouteIndex]?.bounds) map.fitBounds(routes[selectedRouteIndex].bounds);
     });
 
-    // card
-    const card = document.createElement('div'); card.className='route-card';
+    const card = document.createElement('div');
+    card.className='route-card';
     card.dataset.routeIndex = i;
+
     const distText = `${km(r.legs[0].distance.value)} ${i18n[currentLang].kmLabel}`;
     const durText = `${Math.round(r.legs[0].duration.value/60)} ${i18n[currentLang].minsLabel}`;
-    const fare = calculateFare(r, vehicleKey || document.getElementById('vehicle').value || 'grabCar');
+    const fare = calculateFare(r, vehicleKey);
+
     card.innerHTML = `<div class="route-left">
         <div class="route-title">${i18n[currentLang].routeLabel} ${i+1}</div>
         <div class="route-meta">${distText} | ${durText}</div>
       </div>
       <div class="fare-pill">${fare} ฿</div>`;
-    card.onclick = () => { selectedRouteIndex = i; drawPolyline(routes[i], i); highlightSelected(); map.fitBounds(routes[i].bounds); };
+
+    card.onclick = () => {
+      selectedRouteIndex = i;
+      drawPolyline(i);
+      highlightSelected();
+      if(r.bounds) map.fitBounds(r.bounds);
+    };
+
     container.appendChild(card);
   });
 
-  // default select first
   selectedRouteIndex = 0;
-  drawPolyline(routes[0], 0);
+  drawPolyline(0);
   highlightSelected();
 }
 
-/* emphasize the selected route, dim others */
-function drawPolyline(route, index){
-  // set all polylines opacity to dim
+
+function drawPolyline(index){
   polyLines.forEach((p, idx) => {
-    p.setOptions({strokeOpacity: idx === index ? 1.0 : 0.4, strokeWeight: idx === index ? 8 : 6});
+    p.setOptions({strokeOpacity: idx === index ? 1.0 : 0.2, strokeWeight: idx === index ? 8 : 5});
   });
 }
 
-/* highlight card matching selectedRouteIndex */
 function highlightSelected(){
-  document.querySelectorAll('.route-card').forEach((c,i)=>{
-    c.classList.toggle('selected', i === selectedRouteIndex);
+  const cards = document.querySelectorAll('.route-card');
+  cards.forEach(c=>{
+    if(+c.dataset.routeIndex === selectedRouteIndex) c.classList.add('selected');
+    else c.classList.remove('selected');
   });
-  // ensure fare pills updated for current vehicle
   updateRouteFareLabels();
 }
 
-/* update fare text in route cards and fareTable summary */
 function updateRouteFareLabels(){
   const vehicleKey = document.getElementById('vehicle').value || 'grabCar';
   document.querySelectorAll('.route-card').forEach(card=>{
@@ -480,19 +762,30 @@ function updateRouteFareLabels(){
   });
 }
 
-/* -------------- Init wiring -------------- */
 document.getElementById('btn-lang').addEventListener('click', ()=>{
   currentLang = (currentLang === 'th' ? 'en' : 'th');
   applyLanguage();
 });
 
-/* expose some functions for debugging if needed */
+document.getElementById('map-retry').addEventListener('click', ()=>{
+  const existing = document.querySelector('script[data-gm-retry]');
+  if(existing) existing.remove();
+  const tag = document.createElement('script');
+  tag.async = true; tag.defer = true;
+  tag.setAttribute('data-gm-retry', '1');
+  tag.src = 'https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&libraries=places&callback=initMap';
+  tag.onerror = ()=>{ showMapError('เกิดข้อผิดพลาดในการโหลด Google Maps — กรุณาตรวจสอบ API key และการตั้งค่าบัญชี Google Cloud'); };
+  document.body.appendChild(tag);
+});
+
 window.initMap = initMap;
 window.calculateFare = calculateFare;
 window.triggerTextSearch = triggerTextSearch;
+window.gm_authFailure = gm_authFailure;
+
+setTimeout(handleMapsNotLoaded, 3000);
 </script>
 
-<!-- Replace YOUR_API_KEY_HERE with your Google Maps JS key (restrict it appropriately) -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcAtU6iQwn7aUsNwCHST73U2pqKbImiJM&libraries=places&callback=initMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcAtU6iQwn7aUsNwCHST73U2pqKbImiJM&libraries=places&callback=initMap" async defer onerror="(function(){document.getElementById('map-error').style.display='flex';document.getElementById('map-error-msg').textContent='Failed to load Google Maps script (network error or blocked). Using fallback map.';})()"></script>
 </body>
 </html>
