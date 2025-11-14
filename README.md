@@ -181,12 +181,9 @@ const vehicleRates = {
   boltXL:{base:200,perKm:15,freeKm:2,min:300},
   boltTaxi:{base:100,perKm:12,freeKm:2,min:200},
   inDrive:{base:30,perKm:9,freeKm:1,min:80},
-  taxiMeter:{base:50,perKm:12,freeKm:2,min:100},
-  smartBus:{base:100,perKm:0,freeKm:0,min:100,fixed:true},
-  songthaew:{base:40,perKm:0,freeKm:0,min:40,fixed:true},
-  pinkBus:{base:15,perKm:0,freeKm:0,min:15,fixed:true},
-  tukTuk:{base:200,perKm:0,freeKm:0,min:200,fixed:true},
-  motoTaxi:{base:80,perKm:0,freeKm:0,min:80,fixed:true}
+  taxiMeter: {base:50, perKm:12, freeKm:2, min:100}, // คงเดิม
+  tukTuk: {base:150, perKm:5, freeKm:0, min:150}, // ประมาณ: base 150, ต่อ กม. 5
+  motoTaxi: {base:45, perKm:7, freeKm:0, min:45}
 };
 
 const vehicleNames = {
@@ -253,14 +250,33 @@ let currentPos = null, lastRoutes = [], selectedRouteIndex = 0, polyLines = [], 
 let usingLeafletFallback = false;
 
 function km(m){ return (m/1000).toFixed(1); }
-function calculateFare(route, vehicleKey){
+function calculateFare(route, vehicleKey) {
   const v = vehicleRates[vehicleKey];
-  if(!v) return 0;
-  if(v.fixed) return v.min;
-  const kmDistance = route.legs[0].distance.value / 1000;
-  let fare = v.base + Math.max(0, kmDistance - v.freeKm) * v.perKm;
-  return Math.max(Math.round(fare), v.min);
+  if (!v) return 0;
+
+  const kmDistance = route.legs[0].distance.value / 1000; // ระยะทางเป็น km
+
+  // รถที่ประมาณค่า
+  const approxVehicles = ['songthaew','tukTuk','motoTaxi','taxiMeter'];
+
+  if (approxVehicles.includes(vehicleKey)) {
+    let baseFare = v.base + Math.max(0, kmDistance - (v.freeKm || 0)) * (v.perKm || 0);
+    baseFare = Math.max(baseFare, v.min);
+
+    const minFare = Math.round(baseFare * 0.9);
+    const maxFare = Math.round(baseFare * 1.2);
+
+    return `${minFare} - ${maxFare}`; // ตัวเลขเฉยๆ
+  }
+
+  if (v.fixed) return v.min;
+
+  let fare = v.base + Math.max(0, kmDistance - (v.freeKm || 0)) * (v.perKm || 0);
+  return Math.max(Math.round(fare), v.min); // ตัวเลขเฉยๆ
 }
+
+
+
 
 const destinationSvg = `
 <svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 24 24'>
@@ -552,6 +568,8 @@ function computeRoutes(origin, dest) {
 applyLanguage();
 
 function showServiceOption(vehicle) {
+  const skipModal = ['taxiMeter', 'tukTuk', 'motoTaxi'];
+  if(skipModal.includes(vehicle)) return; 
   const appLinks = {
     grabCar: 'grab://open?deeplink_id=ride',
     grabBike: 'grab://open?deeplink_id=ride',
@@ -559,9 +577,6 @@ function showServiceOption(vehicle) {
     boltStandard: 'bolt://open',
     boltVan: 'bolt://open',
     inDrive: 'indrive://open',
-    taxiMeter: '',
-    tukTuk: '',
-    motoTaxi: ''
   };
 
   const webLinks = {
@@ -571,9 +586,7 @@ function showServiceOption(vehicle) {
     boltStandard: 'https://bolt.eu/th-th/rides/',
     boltVan: 'https://bolt.eu/th-th/rides/',
     inDrive: 'https://indrive.com/en-th/city-rides',
-    taxiMeter: 'https://www.phuket.go.th/',
-    tukTuk: 'https://www.phuket.go.th/',
-    motoTaxi: 'https://www.phuket.go.th/'
+
   };
 
   const storeLinks = {
@@ -587,7 +600,7 @@ function showServiceOption(vehicle) {
     },
     inDrive: {
       play: 'https://play.google.com/store/apps/details?id=sinet.startup.inDriver',
-      ios: 'https://apps.apple.com/app/indrive/id996182390'
+      ios: 'https://surl.lt/ufbnmn'
     },
     grabBike: {
       play: 'https://play.google.com/store/apps/details?id=com.grabtaxi.passenger',
